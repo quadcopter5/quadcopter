@@ -1,19 +1,20 @@
 /*
-	i2c_pwm.h
+	pwm.h
 
-	I2C_PWM class - RaspberryPi PWM control interface via PCA9685 I2C
+	PWM class - RaspberryPi PWM control interface via PCA9685 I2C
 */
 
-#ifndef I2C_PWM_H
-#define I2C_PWM_H
+#ifndef PWM_H
+#define PWM_H
 
 #ifndef __cplusplus__
 #error This header requires C++
 #endif
 
+#include <stdint.h>
 #include "i2c.h"
 
-class I2C_PWM {
+class PWM {
 	public:
 		/**
 			Constructor
@@ -27,12 +28,12 @@ class I2C_PWM {
 			Also, the user must ensure that the I2C object remains valid for as
 			long as this I2C_PWM object is used.
 		*/
-		I2C_PWM(I2C *i2c);
+		PWM(I2C *i2c);
 
 		/**
 			Destructor
 		*/
-		~I2C_PWM();
+		~PWM();
 
 		/**
 			Set PWM frequency in Hertz. This determines the period of the
@@ -65,7 +66,8 @@ class I2C_PWM {
 		void setHighTime(unsigned int channel, float millis);
 
 	private:
-		I2C *mI2C;
+		I2C     *mI2C;
+		uint8_t mSlaveAddr;
 };
 
 #endif

@@ -1,10 +1,13 @@
 /*
-	i2c_pwm.h
+	pwm.cpp
 
-	PWM control interface via PCA9685 I2C
+	PWM class - RaspberryPi PWM control interface via PCA9685 I2C
 */
 
-#include "i2c_pwm.h"
+#include <stdint.h>
+
+#include "i2c.h"
+#include "pwm.h"
 
 // PCA9685 Register Addresses
 
@@ -119,5 +122,23 @@
 #define MODE2_OUTNE1   0x02
 #define MODE2_OUTNE0   0x01
 
-#endif
+PWM::PWM(I2C *i2c, uint8_t slaveaddr) {
+	mI2C = i2c;
+	mSlaveAddr = slaveaddr;
+}
 
+PWM::~PWM() {
+	// Put into sleep mode, maybe?
+}
+
+void PWM::setFrequency(unsigned int hertz) {
+	
+}
+
+void setLoad(unsigned int channel, float factor) {
+
+}
+
+void setHighTime(unsigned int channel, float millis) {
+
+}
