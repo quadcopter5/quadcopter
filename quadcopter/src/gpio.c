@@ -1,5 +1,6 @@
-/**
-	Philip Romano
+/*
+	gpio.c
+
 	GPIO Interface for Raspberry Pi (Broadcom 2835)
 */
 

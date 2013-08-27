@@ -1,5 +1,6 @@
-/**
-	Philip Romano
+/*
+	test_queuebuffer.c
+
 	Tests for QueueBuffer
 */
 

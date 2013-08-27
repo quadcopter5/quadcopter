@@ -1,5 +1,5 @@
 /*
-	8/14/2013
+	i2c_pwm.h
 
 	I2C_PWM class - RaspberryPi PWM control interface via PCA9685 I2C
 */
@@ -66,7 +66,7 @@ class I2C_PWM {
 
 	private:
 		I2C *mI2C;
-}
+};
 
 #endif
 

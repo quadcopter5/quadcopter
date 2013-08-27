@@ -1,5 +1,6 @@
-/**
-	Philip Romano
+/*
+	test_uart.c
+
 	Test for UART
 */
 
@@ -12,7 +13,7 @@
 static void ignoreInput();
 
 int main(int argc, char **argv) {
-	if (!uart_init(9600, UART_PARDISABLE)) {
+	if (!uart_init(57600, UART_PAREVEN)) {
 		fprintf(stderr, "uart_init(): %s\n", uart_getLastError());
 		return -1;
 	}
@@ -62,7 +63,7 @@ int main(int argc, char **argv) {
 		printf("  Received: %d\n", number16);
 	else {
 		printf("  Not enough data to read\n");
-		printf("  Size of queue: %d\n", uart_getInputQueueSize());
+		printf("  (Size of queue: %d)\n", uart_getInputQueueSize());
 	}
 
 	printf("Attempting to read a UBE32...\n");
@@ -71,7 +72,7 @@ int main(int argc, char **argv) {
 		printf("  Received: %d\n", number32);
 	else {
 		printf("  Not enough data to read\n");
-		printf("  Size of queue: %d\n", uart_getInputQueueSize());
+		printf("  (Size of queue: %d)\n", uart_getInputQueueSize());
 	}
 
 	/*

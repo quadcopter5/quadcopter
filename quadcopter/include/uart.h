@@ -1,5 +1,6 @@
-/**
-	Philip Romano
+/*
+	uart.h
+
 	UART Interface for Raspberry Pi (Broadcom 2835)
 */
 

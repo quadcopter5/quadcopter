@@ -1,5 +1,6 @@
 /*
-	8/14/2013
+	i2c_pwm.h
+
 	PWM control interface via PCA9685 I2C
 */
 

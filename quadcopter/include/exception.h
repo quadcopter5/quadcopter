@@ -19,6 +19,10 @@
 #ifndef EXCEPTION_H
 #define EXCEPTION_H
 
+#ifndef __cplusplus
+#error This header requires C++
+#endif
+
 #include <exception>
 #include <string>
 
@@ -35,9 +39,16 @@
 
 class Exception : public std::exception {
 	public:
-		Exception(const Exception &e);
-		Exception(const std::string &msg, const std::string &file, int line);
-		~Exception() throw() { }
+		Exception(const Exception &e) : mMessage(e.mMessage), mFile(e.mFile),
+				mLine(e.mLine)
+			{ }
+
+		Exception(const std::string &msg, const std::string &file, int line)
+				: mMessage(msg), mFile(file), mLine(line)
+			{ }
+
+		~Exception() throw()
+			{ }
 
 		/**
 			Get a full text description of the error.

@@ -1,8 +1,11 @@
-/**
-	Philip Romano
-	QueueBuffer data structure
+/*
+	queuebuffer.h
 
-	Stores data byte-per-byte in a FIFO structure.
+	QueueBuffer data structure - stores data byte-per-byte in a FIFO structure.
+
+	C-Style data structure; declare a pointer of type QueueBuffer and initialize
+	it by passing a reference to the pointer to qb_initialize(). Make sure to
+	call qb_free() on the QueueBuffer when the structure is no longer needed.
 */
 
 #ifndef QUEUEBUFFER_H

@@ -1,8 +1,7 @@
-/**
-	Philip Romano
-	QueueBuffer data structure
+/*
+	queuebuffer.c
 
-	Stores data byte-per-byte in a FIFO structure.
+	QueueBuffer data structure - stores data byte-per-byte in a FIFO structure.
 */
 
 #include <stdlib.h>

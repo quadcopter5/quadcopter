@@ -1,9 +1,11 @@
-/**
-	Philip Romano
+/*
+	test_gpio.c
+
 	Tests for GPIO
 */
 
 #include <stdio.h>
+
 #include "gpio.h"
 
 static void ignoreInput();
