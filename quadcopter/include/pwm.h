@@ -24,7 +24,7 @@ class PWM {
 
 			I2C_PWM is NOT responsible for destroying i2c! This must be done by
 			the user of this class.
-			
+
 			Also, the user must ensure that the I2C object remains valid for as
 			long as this I2C_PWM object is used.
 		*/

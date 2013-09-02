@@ -49,25 +49,25 @@ void swapEndian(void *dest, const void *src, size_t numbytes) {
 	free(tempsrc);
 }
 
-inline void hostToBE(void *dest, const void *src, size_t numbytes) {
+void hostToBE(void *dest, const void *src, size_t numbytes) {
 	if (getHostEndian() == ENDIAN_BIG)
 		memcpy(dest, src, numbytes);
 	else
 		swapEndian(dest, src, numbytes);
 }
 
-inline void hostToLE(void *dest, const void *src, size_t numbytes) {
+void hostToLE(void *dest, const void *src, size_t numbytes) {
 	if (getHostEndian() == ENDIAN_LITTLE)
 		memcpy(dest, src, numbytes);
 	else
 		swapEndian(dest, src, numbytes);
 }
 
-inline void BEToHost(void *dest, const void *src, size_t numbytes) {
+void BEToHost(void *dest, const void *src, size_t numbytes) {
 	hostToBE(dest, src, numbytes);
 }
 
-inline void LEToHost(void *dest, const void *src, size_t numbytes) {
+void LEToHost(void *dest, const void *src, size_t numbytes) {
 	hostToLE(dest, src, numbytes);
 }
 

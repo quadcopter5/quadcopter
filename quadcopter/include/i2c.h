@@ -13,6 +13,9 @@
 
 #include <stdint.h>
 #include <string>
+#include <vector>
+
+#include <i2c.h>
 
 #include "exception.h"
 
@@ -30,7 +33,8 @@ class I2C {
 			name is the name of the Linux I2C device interface,
 			e.g. "/dev/i2c-X", where X is a number
 
-			If there is no such device, append the following to /etc/modules:
+			If there is no such device, try appending the following to
+			/etc/modules:
 
 			i2c-bcm2708
 			i2c-dev
@@ -51,7 +55,7 @@ class I2C {
 
 			Throws I2CException if the write operation fails.
 		*/
-		void write(uint8_t slaveaddr, const void *data, size_t length);
+		void write(uint8_t slaveaddr, const void *buffer, size_t length);
 
 		/**
 			Attempts to read length bytes from I2C slave with slaveaddr. length
@@ -65,11 +69,34 @@ class I2C {
 		*/
 		size_t read(uint8_t slaveaddr, void *buffer, size_t length);
 
+		/**
+			Enqueues a write operation to be sent during the next transaction.
+		*/
+		void enqueueWrite(uint8_t slaveaddr, const void *buffer, size_t length);
+
+		/**
+			Enqueues a read operation to be sent during the next transaction.
+		*/
+		void enqueueRead(uint8_t slaveaddr, void *buffer, size_t length);
+
+		/**
+			Sends the queued read/write operations over the I2C connection.
+			The read/write operations are sent in the same order that the
+			functions were called.
+
+			Throws I2CException if the operation fails; in this case, the
+			queue is kept the same as it was before calling this function.
+			However, some sub-operations may have succeeded already.
+		*/
+		void sendTransaction();
+
 	private:
 		int         mFd;            // File descriptor to device
 		std::string mFilename;      // The filename that refers to the device
 		uint8_t     mLastSlaveAddr; // The last used address, to expedite
 		                            // successive operations to the same address
+
+		std::vector<struct i2c_msg> mQueue;
 
 		/**
 			Private copy constructor

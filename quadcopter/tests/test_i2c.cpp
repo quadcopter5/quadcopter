@@ -23,6 +23,16 @@ int main(int argc, char **argv) {
 
 		std::cout << "Returned value: 0x" << std::hex << (int)data[0]
 				<< std::endl;
+
+		std::cout << "Doing queued transaction" << std::endl;
+
+		connection.enqueueWrite(0x40, &data, 1);
+		connection.enqueueRead(0x40, &data[0], 1);
+		connection.sendTransaction();
+
+		std::cout << "Returned value: 0x" << std::hex << (int)data[0]
+				<< std::endl;
+
 	} catch (I2CException &e) {
 		std::cerr << "EXCEPTION: " << e.getDescription() << std::endl;
 		return -1;

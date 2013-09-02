@@ -71,3 +71,35 @@ size_t I2C::read(uint8_t slaveaddr, void *buffer, size_t length) {
 	return bytes;
 }
 
+void I2C::enqueueWrite(uint8_t slaveaddr, const void *buffer, size_t length) {
+	struct i2c_msg msg;
+	msg.addr = slaveaddr;
+	msg.flags = 0;
+	msg.len = length;
+	msg.buf = (uint8_t *)buffer;
+	mQueue.push_back(msg);
+}
+
+void I2C::enqueueRead(uint8_t slaveaddr, void *buffer, size_t length) {
+	struct i2c_msg msg;
+	msg.addr = slaveaddr;
+	msg.flags = I2C_M_RD;
+	msg.len = length;
+	msg.buf = (uint8_t *)buffer;
+	mQueue.push_back(msg);
+}
+
+void I2C::sendTransaction() {
+	if (mQueue.size() > 0) {
+		struct i2c_rdwr_ioctl_data iodata;
+		iodata.msgs = &mQueue[0];
+		iodata.nmsgs = mQueue.size();
+
+		int iostatus;
+		if ((iostatus = ioctl(mFd, I2C_RDWR, &iodata)) < 0)
+			THROW_EXCEPT(I2CException, "I2C ioctl() failed");
+
+		mQueue.clear();
+	}
+}
+
