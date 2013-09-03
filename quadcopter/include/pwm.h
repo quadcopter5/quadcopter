@@ -12,7 +12,15 @@
 #endif
 
 #include <stdint.h>
+
+#include "exception.h"
 #include "i2c.h"
+
+class PWMException : public Exception {
+	public:
+		PWMException(const std::string &msg, const std::string &file, int line)
+				: Exception(msg, file, line) { }
+};
 
 class PWM {
 	public:

@@ -5,7 +5,9 @@
 */
 
 #include <stdint.h>
+#include <unistd.h>
 
+#include "exception.h"
 #include "i2c.h"
 #include "pwm.h"
 
@@ -123,16 +125,56 @@
 #define MODE2_OUTNE0   0x01
 
 PWM::PWM(I2C *i2c, uint8_t slaveaddr) {
+	if (!i2c)
+		THROW_EXCEPT(PWMException, "Invalid I2C object");
+
 	mI2C = i2c;
 	mSlaveAddr = slaveaddr;
+
+	setFrequency(20);
 }
 
 PWM::~PWM() {
 	// Put into sleep mode, maybe?
+	char buffer[2];
+	int bufsize = 2;
+	buffer[0] = 0b00000000;
+	buffer[1] = 0b00110000; // Auto-Increment (bit 5) | Sleep (bit 4)
+
+	i2c->write(mSlaveAddr, buffer, bufsize);
 }
 
 void PWM::setFrequency(unsigned int hertz) {
-	
+	char buffer[8];
+	int  bufsize;
+
+	// Put to sleep before modifying PRE_SCALE
+	bufsize = 2;
+	buffer[0] = 0b00000000;
+	buffer[1] = 0b00110000; // Auto-Increment (bit 5) | Sleep (bit 4)
+
+	i2c->write(mSlaveAddr, buffer, bufsize);
+
+	usleep(1000);
+
+	bufsize = 4;
+	buffer[0] = 0b11111110; // PRE_SCALE
+	buffer[1] = (25000000 / (4096 * hertz)) - 1;
+//	buffer[1] = 0x0079;     // (25000000Hz / (4096 * freq)) - 1
+//	                        // freq = 50Hz, prescale = 121 = 0x79
+	buffer[2] = 0b00000000; // MODE1
+	buffer[3] = 0b00100000; // Auto-Increment | Not Sleep
+	i2c->write(mSlaveAddr, buffer, bufsize);
+
+	// Must be not sleeping for at least 500us before writing to Reset bit
+	usleep(1000);
+
+	bufsize = 2;
+	buffer[0] = 0b00000000;
+	buffer[1] = 0b10100000; // Reset | Auto-Increment
+	i2c->write(mSlaveAddr, buffer, bufsize);
+
+	usleep(1000);
 }
 
 void setLoad(unsigned int channel, float factor) {
