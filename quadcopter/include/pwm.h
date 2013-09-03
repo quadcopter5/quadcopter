@@ -7,7 +7,7 @@
 #ifndef PWM_H
 #define PWM_H
 
-#ifndef __cplusplus__
+#ifndef __cplusplus
 #error This header requires C++
 #endif
 
@@ -36,7 +36,7 @@ class PWM {
 			Also, the user must ensure that the I2C object remains valid for as
 			long as this I2C_PWM object is used.
 		*/
-		PWM(I2C *i2c);
+		PWM(I2C *i2c, uint8_t slaveaddr);
 
 		/**
 			Destructor
@@ -62,6 +62,11 @@ class PWM {
 				factor = 0.0f  => No load
 				factor = 0.5f  => Half load
 				factor = 1.0f  => Full load
+
+			factor values outside of this range will be implicitly clipped to the
+			outer values of the range.
+
+			Throws PWMException if channel is not a valid channel number.
 		*/
 		void setLoad(unsigned int channel, float factor);
 
@@ -70,12 +75,19 @@ class PWM {
 
 			This function will attempt to set the amount of time in HIGH state
 			during each PWM cycle, independent of the PWM frequency selected.
+
+			The amount of time will be implicitly clipped to the maximum number of
+			milliseconds in each PWM cycle.
+
+			Throws PWMException if channel is not a valid channel number.
 		*/
 		void setHighTime(unsigned int channel, float millis);
 
 	private:
 		I2C     *mI2C;
 		uint8_t mSlaveAddr;
+
+		unsigned int mFrequency; // in Hz
 };
 
 #endif
