@@ -2,6 +2,14 @@
 	pwm.h
 
 	PWM class - RaspberryPi PWM control interface via PCA9685 I2C
+
+	A single PWM instance for each PCA9685 should exist throughout the entire
+	time that PWM control is needed. The hardware module is taken out of sleep
+	mode when the PWM object is instantiated, and it is put into sleep mode when
+	the object is destructed.
+	
+	Note that PWM output continues while the PCA9685 sleeps; however, the output
+	cannot be modified.
 */
 
 #ifndef PWM_H
@@ -49,6 +57,8 @@ class PWM {
 
 			Per limitations of PCA9685, the frequency is the same across all PWM
 			channels on the board.
+
+			Throws I2CException if I2C communication fails.
 		*/
 		void setFrequency(unsigned int hertz);
 
@@ -67,6 +77,7 @@ class PWM {
 			outer values of the range.
 
 			Throws PWMException if channel is not a valid channel number.
+			       I2CException if I2C communication fails.
 		*/
 		void setLoad(unsigned int channel, float factor);
 
@@ -80,6 +91,7 @@ class PWM {
 			milliseconds in each PWM cycle.
 
 			Throws PWMException if channel is not a valid channel number.
+			       I2CException if I2C communication fails.
 		*/
 		void setHighTime(unsigned int channel, float millis);
 

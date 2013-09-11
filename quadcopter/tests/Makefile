@@ -18,34 +18,32 @@ dirs:
 
 tests: ../lib/libperipherals_d.a $(BINDIR)/test_gpio.x $(BINDIR)/test_uart.x \
 		$(BINDIR)/test_queuebuffer.x $(BINDIR)/test_i2c.x \
-		$(BINDIR)/test_uart_read.x $(BINDIR)/test_endian.x
+		$(BINDIR)/test_uart_read.x $(BINDIR)/test_endian.x \
+		$(BINDIR)/test_pwm.x
 
 
 # Tests
 
 $(BINDIR)/test_gpio.x: test_gpio.c
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_gpio.c $(LDFLAGS) \
-			-o $(BINDIR)/test_gpio.x
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_gpio.c $(LDFLAGS) -o $@
 
 $(BINDIR)/test_uart.x: test_uart.c
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_uart.c $(LDFLAGS) \
-			-o $(BINDIR)/test_uart.x
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_uart.c $(LDFLAGS) -o $@
 
 $(BINDIR)/test_queuebuffer.x: test_queuebuffer.c
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_queuebuffer.c $(LDFLAGS) \
-			-o $(BINDIR)/test_queuebuffer.x
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_queuebuffer.c $(LDFLAGS) -o $@
 
 $(BINDIR)/test_i2c.x: test_i2c.cpp
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_i2c.cpp $(LDFLAGS) \
-			-o $(BINDIR)/test_i2c.x
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_i2c.cpp $(LDFLAGS) -o $@
 
 $(BINDIR)/test_uart_read.x: test_uart_read.c
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_uart_read.c $(LDFLAGS) \
-			-o $(BINDIR)/test_uart_read.x
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_uart_read.c $(LDFLAGS) -o $@
 
 $(BINDIR)/test_endian.x: test_endian.c
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_endian.c ../obj/endianness_d.o \
-			-o $(BINDIR)/test_endian.x
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_endian.c ../obj/endianness_d.o -o $@
+
+$(BINDIR)/test_pwm.x: test_pwm.cpp
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_pwm.cpp $(LDFLAGS) -o $@
 
 
 clean:
