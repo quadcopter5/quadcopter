@@ -1,8 +1,8 @@
 /*
-	test_i2c.cpp
+	test_pwm.cpp
 
-	Test for I2C class
-	Using ADXL345 Accelerometer (on GY-80 chip)
+	Test for PWM class
+	Controls an analog PWM servo. Sets output to 1.5ms on 20ms (50Hz) frequency.
 */
 
 #include <iostream>

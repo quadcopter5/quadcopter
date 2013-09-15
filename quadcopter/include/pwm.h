@@ -36,9 +36,10 @@ class PWM {
 			Constructor
 
 			Creates an I2C PWM interface via the given (already instantiated) I2C
-			interface.
+			interface. Throughout the lifetime of the object, the given slave
+			address is used for communication.
 
-			I2C_PWM is NOT responsible for destroying i2c! This must be done by
+			The class is NOT responsible for destroying i2c! This must be done by
 			the user of this class.
 
 			Also, the user must ensure that the I2C object remains valid for as

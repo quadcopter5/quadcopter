@@ -19,7 +19,7 @@ dirs:
 tests: ../lib/libperipherals_d.a $(BINDIR)/test_gpio.x $(BINDIR)/test_uart.x \
 		$(BINDIR)/test_queuebuffer.x $(BINDIR)/test_i2c.x \
 		$(BINDIR)/test_uart_read.x $(BINDIR)/test_endian.x \
-		$(BINDIR)/test_pwm.x
+		$(BINDIR)/test_pwm.x $(BINDIR)/test_accelerometer.x
 
 
 # Tests
@@ -43,6 +43,9 @@ $(BINDIR)/test_endian.x: test_endian.c
 	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_endian.c ../obj/endianness_d.o -o $@
 
 $(BINDIR)/test_pwm.x: test_pwm.cpp
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_pwm.cpp $(LDFLAGS) -o $@
+
+$(BINDIR)/test_accelerometer.x: test_accelerometer.cpp
 	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_pwm.cpp $(LDFLAGS) -o $@
 
 
