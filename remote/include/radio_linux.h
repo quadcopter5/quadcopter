@@ -26,7 +26,8 @@ class LinuxRadio : public Radio {
 
 			Throws RadioException if the setup fails.
 		*/
-		LinuxRadio(const std::string &devfile, int baudrate, Parity p);
+		LinuxRadio(const std::string &devfile, int baudrate = 9600,
+				Parity p = PARITY_NONE);
 
 		/**
 			Destructor

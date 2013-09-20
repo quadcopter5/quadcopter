@@ -45,16 +45,15 @@ LinuxRadio::LinuxRadio(const std::string &devfile, int baudrate, Parity p) {
 	tprops.c_lflag = 0;
 
 	// Disable control characaters
-	int cc;
-	for (cc = 0; cc < NCCS; ++cc)
+	for (int cc = 0; cc < NCCS; ++cc)
 		tprops.c_cc[cc] = _POSIX_VDISABLE;
 
 	tprops.c_cc[VMIN]  = 0; // No minimum number of characters for reads
 	tprops.c_cc[VTIME] = 0; // No timeout (0 deciseconds)
 
 	speed_t baudspeed = baudToSpeed(mBaudRate);
-	cfsetospeed(&tprops, baudrate);
-	cfsetispeed(&tprops, baudrate);
+	cfsetospeed(&tprops, baudspeed);
+	cfsetispeed(&tprops, baudspeed);
 
 	tcsetattr(mFD, TCSAFLUSH, &tprops);
 
@@ -68,15 +67,16 @@ LinuxRadio::~LinuxRadio() {
 
 void LinuxRadio::setBaudRate(int baudrate) {
 	mBaudRate = baudrate;
-	speed_t baudspeed = baudToSpeed(mBaudRate);
 
 	struct termios tprops;
 	tcgetattr(mFD, &tprops);
 
-	cfsetospeed(&tprops, baudrate);
-	cfsetispeed(&tprops, baudrate);
+	speed_t baudspeed = baudToSpeed(mBaudRate);
+	cfsetospeed(&tprops, baudspeed);
+	cfsetispeed(&tprops, baudspeed);
 
 	tcsetattr(mFD, TCSAFLUSH, &tprops);
+	tcflush(mFD, TCIOFLUSH);
 }
 
 void LinuxRadio::setParity(Parity p) {
@@ -97,6 +97,7 @@ void LinuxRadio::setParity(Parity p) {
 	}
 
 	tcsetattr(mFD, TCSAFLUSH, &tprops);
+	tcflush(mFD, TCIOFLUSH);
 }
 
 int LinuxRadio::write(const std::string &buffer) {
@@ -137,7 +138,8 @@ int LinuxRadio::read(std::string &buffer, size_t numbytes) {
 	char cbuf[4096];
 	std::string result;
 
-	while ((bytes = ::read(mFD, cbuf, 4096)) > 0) {
+	while ((bytes = ::read(mFD, cbuf, 4096)) > 0
+			&& (numbytes == 0 || numbytes > 0 && totalbytes < numbytes)) {
 		if (bytes == -1)
 			THROW_EXCEPT(RadioException, "Failed to read from radio");
 		else {
