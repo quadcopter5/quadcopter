@@ -4,15 +4,29 @@
 	Test for Radio and LinuxRadio classes
 */
 
+#include <string>
 #include <iostream>
+
+#include <unistd.h>
 
 #include "radio.h"
 #include "radio_linux.h"
 
 int main(int argc, char **argv) {
 	try {
-		Radio *radio = new LinuxRadio("/dev/ttyUSB0", 9600,
+		Radio *radio = new LinuxRadio("/dev/ttyUSB0", 57600,
 				Radio::PARITY_EVEN);
+
+		radio->write("Hello!");
+
+		std::string message;
+		uint32_t number;
+		while (true) {
+//			size_t bytes = radio->read(message, 0);
+			size_t bytes = radio->readUBE32(&number);
+			std::cout << bytes << "B : " << number << std::endl;
+			usleep(100000);
+		}
 
 		delete radio;
 	} catch (RadioException &e) {
