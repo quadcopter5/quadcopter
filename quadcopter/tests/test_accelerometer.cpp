@@ -8,11 +8,13 @@
 #include <iostream>
 #include <stdint.h>
 
+#include <unistd.h>
+
 #include "accelerometer.h"
 
 int main(int argc, char **argv) {
 	try {
-		I2C connection("dev/i2c-1");
+		I2C connection("/dev/i2c-1");
 		Accelerometer accel(&connection, 0x53, Accelerometer::RANGE_2G,
 				Accelerometer::SRATE_100HZ);
 
@@ -27,9 +29,7 @@ int main(int argc, char **argv) {
 			          << " | Z : " << values.z
 			          << std::endl;
 
-			std::cin >> input;
-			if (input.length() > 0)
-				running = false;
+			usleep(10000);
 		}
 
 	} catch (I2CException &e) {

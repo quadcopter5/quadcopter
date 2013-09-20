@@ -12,7 +12,7 @@
 
 int main(int argc, char **argv) {
 	try {
-		I2C connection("dev/i2c-1");
+		I2C connection("/dev/i2c-1");
 		PWM pwm(&connection, 0x40);
 
 		pwm.setFrequency(50);

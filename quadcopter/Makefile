@@ -121,7 +121,7 @@ $(OBJDIR)/pwm_d.o: $(SRCDIR)/pwm.cpp $(INCLUDEDIR)/pwm.h
 
 $(OBJDIR)/accelerometer_d.o: $(SRCDIR)/accelerometer.cpp \
 		$(INCLUDEDIR)/accelerometer.h
-	$(CC) $(CFLAGS) $(RELEASEFLAGS) -c $(SRCDIR)/accelerometer.cpp -o $@
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) -c $(SRCDIR)/accelerometer.cpp -o $@
 
 
 clean:

@@ -46,7 +46,7 @@ $(BINDIR)/test_pwm.x: test_pwm.cpp
 	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_pwm.cpp $(LDFLAGS) -o $@
 
 $(BINDIR)/test_accelerometer.x: test_accelerometer.cpp
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_pwm.cpp $(LDFLAGS) -o $@
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_accelerometer.cpp $(LDFLAGS) -o $@
 
 
 clean:
