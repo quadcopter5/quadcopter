@@ -20,7 +20,8 @@ dirs:
 tests: ../lib/libperipherals_d.a $(BINDIR)/test_gpio.x $(BINDIR)/test_uart.x \
 		$(BINDIR)/test_queuebuffer.x $(BINDIR)/test_i2c.x \
 		$(BINDIR)/test_uart_read.x $(BINDIR)/test_endian.x \
-		$(BINDIR)/test_pwm.x $(BINDIR)/test_accelerometer.x
+		$(BINDIR)/test_pwm.x $(BINDIR)/test_accelerometer.x \
+		$(BINDIR)/test_motor.x
 	make -C .. debug
 
 # Tests
@@ -48,6 +49,9 @@ $(BINDIR)/test_pwm.x: test_pwm.cpp ../lib/libperipherals_d.a
 
 $(BINDIR)/test_accelerometer.x: test_accelerometer.cpp ../lib/libperipherals_d.a
 	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_accelerometer.cpp $(LDFLAGS) -o $@
+
+$(BINDIR)/test_motor.x: test_motor.cpp ../lib/libperipherals_d.a
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_motor.cpp $(LDFLAGS) -o $@
 
 
 clean:
