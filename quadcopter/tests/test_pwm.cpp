@@ -14,16 +14,19 @@ int main(int argc, char **argv) {
 	try {
 		I2C connection("/dev/i2c-1");
 		PWM pwm(&connection, 0x40);
-
 		pwm.setFrequency(50);
-		pwm.setHighTime(0, 1.5f);
 
-		std::cout << "Set High Time for Channel 0 to 1.5 ms" << std::endl;
+		pwm.setHighTime(8, 0.6f);
+		std::cout << "Set High Time for Channel 8 to 0.6 ms" << std::endl;
 		std::cin.ignore();
 
-		pwm.setLoad(0, 0.1f); // 10% load of 20ms
+		pwm.setHighTime(8, 2.6f);
+		std::cout << "Set High Time for Channel 8 to 2.6 ms" << std::endl;
+		std::cin.ignore();
 
-		std::cout << "Set Load factor to 10%" << std::endl;
+		pwm.setLoad(8, 0.075f); // 0.075% load of 20ms (= 1.5ms)
+		std::cout << "Set Load factor to 0.075%" << std::endl;
+		std::cin.ignore();
 
 	} catch (PWMException &e) {
 		std::cerr << "PWM EXCEPTION: " << e.getDescription() << std::endl;
