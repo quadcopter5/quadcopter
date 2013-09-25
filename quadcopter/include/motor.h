@@ -1,8 +1,15 @@
 /*
-	motor.cpp
+	motor.h
 
 	Motor class - abstraction to represent a single motor, controlled by a PWM
 		speed controller.
+
+	The constructor automatically sends a PWM signal for priming. The motor
+	controller will beep when it is ready to start.
+	
+	For Hobbywing Flyfun 18A motor controllers:
+	   min_hightime to 1.270ms for no motion
+	   max_hightime to greatest desired value
 */
 
 #ifndef MOTOR_H
@@ -45,6 +52,8 @@ class Motor {
 				1.0f : full calibrated speed
 			 > 1.0f : faster than calibrated speed (not recommended)
 
+			Providing a negative value will set the motor to priming mode.
+
 			Throws I2CException.
 		*/
 		void setSpeed(float speed);
@@ -52,6 +61,9 @@ class Motor {
 		/**
 			Get the current speed of the motor. This is only handled through
 			software, so this is strictly the last value passed to setSpeed().
+
+			If this is called before calling setSpeed(), then the value returned
+			will be negative, indicating that the motor is in the priming state.
 		*/
 		float getSpeed();
 

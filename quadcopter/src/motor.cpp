@@ -14,7 +14,7 @@ Motor::Motor(PWM *pwm, int channel, float min_hightime, float max_hightime) {
 	mChannel = channel;
 	mMinHighTime = min_hightime;
 	mMaxHighTime = max_hightime;
-	mSpeed = 0.0f;
+	mSpeed = -1.0f;
 
 	if (!pwm)
 		THROW_EXCEPT(PWMException, "Provided PWM is not valid");
@@ -28,8 +28,13 @@ Motor::~Motor() {
 
 void Motor::setSpeed(float speed) {
 	mSpeed = speed;
-	float hightime = mMinHighTime + (mMaxHighTime - mMinHighTime) * mSpeed;
-	mPWM->setHighTime(mChannel, hightime);
+	if (mSpeed < 0.0f) {
+		// Priming
+		mPWM->setHighTime(mChannel, 0.680f);
+	} else {
+		float hightime = mMinHighTime + (mMaxHighTime - mMinHighTime) * mSpeed;
+		mPWM->setHighTime(mChannel, hightime);
+	}
 }
 
 float Motor::getSpeed() {
