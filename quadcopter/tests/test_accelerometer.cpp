@@ -6,13 +6,17 @@
 
 #include <string>
 #include <iostream>
+#include <stdio.h>
+#include <iomanip>
 #include <stdint.h>
+
+#include <unistd.h>
 
 #include "accelerometer.h"
 
 int main(int argc, char **argv) {
 	try {
-		I2C connection("dev/i2c-1");
+		I2C connection("/dev/i2c-1");
 		Accelerometer accel(&connection, 0x53, Accelerometer::RANGE_2G,
 				Accelerometer::SRATE_100HZ);
 
@@ -22,14 +26,10 @@ int main(int argc, char **argv) {
 		bool running = true;
 		while (running) {
 			values = accel.read();
-			std::cout << "X : " << values.x
-			          << " | Y : " << values.y
-			          << " | Z : " << values.z
-			          << std::endl;
+			printf("X : %+08f | Y : %+08f | Z : %+08f\n",
+					values.x, values.y, values.z);
 
-			std::cin >> input;
-			if (input.length() > 0)
-				running = false;
+			usleep(10000);
 		}
 
 	} catch (I2CException &e) {

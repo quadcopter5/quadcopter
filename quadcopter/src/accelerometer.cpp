@@ -30,6 +30,7 @@ Accelerometer::Accelerometer(I2C *i2c, uint8_t slaveaddr, Range range,
 	mSlaveAddr = slaveaddr;
 	mRange = range;
 
+	setSleep(true);
 	setRange(range);
 	setSampleRate(rate);
 	setSleep(false);
@@ -52,15 +53,22 @@ Accelerometer::~Accelerometer() {
 }
 
 void Accelerometer::setSleep(bool sleep) {
-	// Put into sleep mode
 	char buffer[2];
 	buffer[0] = POWER_CTL;
-	if (sleep)
-		buffer[1] = 0b00010000; // Sleep (bit 2)
-	else
-		buffer[1] = 0b00000000; // !Sleep (bit 2)
 
-	mI2C->write(mSlaveAddr, buffer, 2);
+	if (sleep) {
+		buffer[1] = 0b00000100; // Sleep (bit 2), !Measure (bit 3)
+		mI2C->write(mSlaveAddr, buffer, 2);
+	}
+	else {
+		// Per documentation, standby mode first
+		buffer[1] = 0b00000000; // !Sleep (bit 2)
+		mI2C->write(mSlaveAddr, buffer, 2);
+
+		// Then enable measurement
+		buffer[1] = 0b00001000; // Measure (bit 3)
+		mI2C->write(mSlaveAddr, buffer, 2);
+	}
 }
 
 void Accelerometer::setRange(Range range) {
@@ -84,7 +92,7 @@ Vector3<float> Accelerometer::read() {
 	float factor;
 	int16_t values[3];
 	char buffer = DATAX0;
-	
+
 	mI2C->enqueueWrite(mSlaveAddr, &buffer, 1);
 	mI2C->enqueueRead(mSlaveAddr, values, 6);
 	mI2C->sendTransaction();

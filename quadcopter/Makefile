@@ -65,17 +65,17 @@ $(OBJDIR)/exception_d.o: $(SRCDIR)/exception.cpp
 
 $(LIBDIR)/libperipherals.a: $(OBJDIR)/gpio.o $(OBJDIR)/uart.o \
 		$(OBJDIR)/queuebuffer.o $(OBJDIR)/i2c.o $(OBJDIR)/endianness.o \
-		$(OBJDIR)/pwm.o $(OBJDIR)/accelerometer.o
+		$(OBJDIR)/pwm.o $(OBJDIR)/accelerometer.o $(OBJDIR)/motor.o
 	ar rcs $(LIBDIR)/libperipherals.a $(OBJDIR)/gpio.o $(OBJDIR)/uart.o \
 		$(OBJDIR)/queuebuffer.o $(OBJDIR)/i2c.o $(OBJDIR)/endianness.o \
-		$(OBJDIR)/pwm.o $(OBJDIR)/accelerometer.o
+		$(OBJDIR)/pwm.o $(OBJDIR)/accelerometer.o $(OBJDIR)/motor.o
 
 $(LIBDIR)/libperipherals_d.a: $(OBJDIR)/gpio_d.o $(OBJDIR)/uart_d.o \
 		$(OBJDIR)/queuebuffer_d.o $(OBJDIR)/i2c_d.o $(OBJDIR)/endianness_d.o \
-		$(OBJDIR)/pwm_d.o $(OBJDIR)/accelerometer_d.o
+		$(OBJDIR)/pwm_d.o $(OBJDIR)/accelerometer_d.o $(OBJDIR)/motor_d.o
 	ar rcs $(LIBDIR)/libperipherals_d.a $(OBJDIR)/gpio_d.o $(OBJDIR)/uart_d.o \
 		$(OBJDIR)/queuebuffer_d.o $(OBJDIR)/i2c_d.o $(OBJDIR)/endianness_d.o \
-		$(OBJDIR)/pwm_d.o $(OBJDIR)/accelerometer_d.o
+		$(OBJDIR)/pwm_d.o $(OBJDIR)/accelerometer_d.o $(OBJDIR)/motor_d.o
 
 
 $(OBJDIR)/gpio.o: $(SRCDIR)/gpio.c $(INCLUDEDIR)/gpio.h
@@ -100,6 +100,9 @@ $(OBJDIR)/accelerometer.o: $(SRCDIR)/accelerometer.cpp \
 		$(INCLUDEDIR)/accelerometer.h
 	$(CC) $(CFLAGS) $(RELEASEFLAGS) -c $(SRCDIR)/accelerometer.cpp -o $@
 
+$(OBJDIR)/motor.o: $(SRCDIR)/motor.cpp $(INCLUDEDIR)/motor.h
+	$(CC) $(CFLAGS) $(RELEASEFLAGS) -c $(SRCDIR)/motor.cpp -o $@
+
 
 $(OBJDIR)/gpio_d.o: $(SRCDIR)/gpio.c $(INCLUDEDIR)/gpio.h
 	$(CC) $(CFLAGS) $(DEBUGFLAGS) -c $(SRCDIR)/gpio.c -o $@
@@ -121,7 +124,10 @@ $(OBJDIR)/pwm_d.o: $(SRCDIR)/pwm.cpp $(INCLUDEDIR)/pwm.h
 
 $(OBJDIR)/accelerometer_d.o: $(SRCDIR)/accelerometer.cpp \
 		$(INCLUDEDIR)/accelerometer.h
-	$(CC) $(CFLAGS) $(RELEASEFLAGS) -c $(SRCDIR)/accelerometer.cpp -o $@
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) -c $(SRCDIR)/accelerometer.cpp -o $@
+
+$(OBJDIR)/motor_d.o: $(SRCDIR)/motor.cpp $(INCLUDEDIR)/motor.h
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) -c $(SRCDIR)/motor.cpp -o $@
 
 
 clean:
