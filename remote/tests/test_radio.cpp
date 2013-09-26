@@ -1,7 +1,7 @@
 /*
 	test_radio.cpp
 
-	Test for Radio and LinuxRadio classes
+	Test for Radio and RadioLinux classes
 */
 
 #include <string>
@@ -10,11 +10,11 @@
 #include <unistd.h>
 
 #include "radio.h"
-#include "radio_linux.h"
+#include "radiolinux.h"
 
 int main(int argc, char **argv) {
 	try {
-		Radio *radio = new LinuxRadio("/dev/ttyUSB0", 57600,
+		Radio *radio = new RadioLinux("/dev/ttyUSB0", 57600,
 				Radio::PARITY_EVEN);
 
 		radio->write("Hello!");

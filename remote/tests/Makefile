@@ -17,15 +17,24 @@ all: dirs tests
 dirs:
 	mkdir -p $(BINDIR)
 
-tests: $(BINDIR)/test_radio.x
+tests: $(BINDIR)/test_radio.x $(BINDIR)/test_radioconnection.x
 
 
 # Tests
 
-$(BINDIR)/test_radio.x: test_radio.cpp $(SRCDIR)/radio_linux.cpp \
+$(BINDIR)/test_radio.x: test_radio.cpp $(SRCDIR)/radiolinux.cpp \
 		$(SRCDIR)/exception.cpp $(SRCDIR)/endianness.c
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_radio.cpp $(SRCDIR)/radio_linux.cpp \
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_radio.cpp $(SRCDIR)/radiolinux.cpp \
 		$(SRCDIR)/exception.cpp $(SRCDIR)/endianness.c $(LDFLAGS) -o $@
+
+$(BINDIR)/test_radioconnection.x: test_radioconnection.cpp \
+		$(SRCDIR)/radioconnection.cpp $(SRCDIR)/packetmotion.cpp \
+		$(SRCDIR)/radiolinux.cpp $(SRCDIR)/exception.cpp \
+		$(SRCDIR)/endianness.c
+	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_radioconnection.cpp \
+		$(SRCDIR)/radioconnection.cpp $(SRCDIR)/packetmotion.cpp \
+		$(SRCDIR)/radiolinux.cpp $(SRCDIR)/exception.cpp \
+		$(SRCDIR)/endianness.c $(LDFLAGS) -o $@
 
 
 clean:

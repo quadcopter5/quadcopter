@@ -1,12 +1,12 @@
 /*
-	radio_linux.h
+	radiolinux.h
 
-	LinuxRadio class - implementation of Radio abstract base class for
+	RadioLinux class - implementation of Radio abstract base class for
 		Linux.
 */
 
-#ifndef RADIO_LINUX_H
-#define RADIO_LINUX_H
+#ifndef RADIOLINUX_H
+#define RADIOLINUX_H
 
 #include <string>
 #include <stdint.h>
@@ -16,7 +16,7 @@
 #include "exception.h"
 #include "radio.h"
 
-class LinuxRadio : public Radio {
+class RadioLinux : public Radio {
 	public:
 		/**
 			Constructor
@@ -26,7 +26,7 @@ class LinuxRadio : public Radio {
 
 			Throws RadioException if the setup fails.
 		*/
-		LinuxRadio(const std::string &devfile, int baudrate = 9600,
+		RadioLinux(const std::string &devfile, int baudrate = 9600,
 				Parity p = PARITY_NONE);
 
 		/**
@@ -34,7 +34,7 @@ class LinuxRadio : public Radio {
 
 			Closes the connection with the radio module.
 		*/
-		~LinuxRadio();
+		~RadioLinux();
 
 		/**
 			Set the baudrate used to communicate with the radio module.

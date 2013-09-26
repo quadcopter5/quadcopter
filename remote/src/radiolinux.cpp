@@ -1,7 +1,7 @@
 /*
-	radio_linux.h
+	radiolinux.cpp
 
-	LinuxRadio class - implementation of Radio abstract base class for
+	RadioLinux class - implementation of Radio abstract base class for
 		Linux.
 */
 
@@ -16,9 +16,9 @@
 #include "exception.h"
 #include "endianness.h"
 #include "radio.h"
-#include "radio_linux.h"
+#include "radiolinux.h"
 
-LinuxRadio::LinuxRadio(const std::string &devfile, int baudrate, Parity p) {
+RadioLinux::RadioLinux(const std::string &devfile, int baudrate, Parity p) {
 	mBaudRate = baudrate;
 	mParity = p;
 
@@ -61,11 +61,11 @@ LinuxRadio::LinuxRadio(const std::string &devfile, int baudrate, Parity p) {
 	tcflush(mFD, TCIOFLUSH);
 }
 
-LinuxRadio::~LinuxRadio() {
+RadioLinux::~RadioLinux() {
 	close(mFD);
 }
 
-void LinuxRadio::setBaudRate(int baudrate) {
+void RadioLinux::setBaudRate(int baudrate) {
 	mBaudRate = baudrate;
 
 	struct termios tprops;
@@ -79,7 +79,7 @@ void LinuxRadio::setBaudRate(int baudrate) {
 	tcflush(mFD, TCIOFLUSH);
 }
 
-void LinuxRadio::setParity(Parity p) {
+void RadioLinux::setParity(Parity p) {
 	mParity = p;
 
 	struct termios tprops;
@@ -100,7 +100,7 @@ void LinuxRadio::setParity(Parity p) {
 	tcflush(mFD, TCIOFLUSH);
 }
 
-int LinuxRadio::write(const std::string &buffer) {
+int RadioLinux::write(const std::string &buffer) {
 	int bytes;
 	if ((bytes = ::write(mFD, buffer.c_str(), buffer.length())) == -1)
 		THROW_EXCEPT(RadioException, "Failed to write to radio");
@@ -108,14 +108,14 @@ int LinuxRadio::write(const std::string &buffer) {
 }
 
 
-int LinuxRadio::writeChar(char c) {
+int RadioLinux::writeChar(char c) {
 	int bytes;
 	if ((bytes = ::write(mFD, &c, 1)) == -1)
 		THROW_EXCEPT(RadioException, "Failed to write to radio");
 	return bytes;
 }
 
-int LinuxRadio::writeUBE16(uint16_t i) {
+int RadioLinux::writeUBE16(uint16_t i) {
 	int bytes;
 	uint16_t swapped;
 	hostToBE(&swapped, &i, sizeof(i));
@@ -124,7 +124,7 @@ int LinuxRadio::writeUBE16(uint16_t i) {
 	return bytes;
 }
 
-int LinuxRadio::writeUBE32(uint32_t i) {
+int RadioLinux::writeUBE32(uint32_t i) {
 	int bytes;
 	uint32_t swapped;
 	hostToBE(&swapped, &i, sizeof(i));
@@ -133,7 +133,7 @@ int LinuxRadio::writeUBE32(uint32_t i) {
 	return bytes;
 }
 
-int LinuxRadio::read(std::string &buffer, size_t numbytes) {
+int RadioLinux::read(std::string &buffer, size_t numbytes) {
 	int bytes, totalbytes = 0;
 	char cbuf[4096];
 	std::string result;
@@ -153,14 +153,14 @@ int LinuxRadio::read(std::string &buffer, size_t numbytes) {
 	return totalbytes;
 }
 
-int LinuxRadio::readChar(char *c) {
+int RadioLinux::readChar(char *c) {
 	int bytes;
 	if ((bytes = ::read(mFD, c, 1)) == -1)
 		THROW_EXCEPT(RadioException, "Failed to read from radio");
 	return bytes;
 }
 
-int LinuxRadio::readUBE16(uint16_t *i) {
+int RadioLinux::readUBE16(uint16_t *i) {
 	int bytes;
 	uint16_t orig;
 	if ((bytes = ::read(mFD, &orig, sizeof(orig))) == -1)
@@ -169,7 +169,7 @@ int LinuxRadio::readUBE16(uint16_t *i) {
 	return bytes;
 }
 
-int LinuxRadio::readUBE32(uint32_t *i) {
+int RadioLinux::readUBE32(uint32_t *i) {
 	int bytes;
 	uint32_t orig;
 	if ((bytes = ::read(mFD, &orig, sizeof(orig))) == -1)
@@ -182,7 +182,7 @@ int LinuxRadio::readUBE32(uint32_t *i) {
 	Private member functions
 */
 
-speed_t LinuxRadio::baudToSpeed(int baudrate) {
+speed_t RadioLinux::baudToSpeed(int baudrate) {
 	switch (baudrate) {
 		case 1200:
 			return B1200;
