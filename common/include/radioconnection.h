@@ -30,6 +30,17 @@ class RadioConnection {
 		~RadioConnection();
 
 		/**
+			Wait for the other side to acknowledge a connection.
+
+			This function will block infinitely until there is an
+			acknowledgement.
+
+			Note that this is technically unnecessary, but using this function
+			on both sides will ensure that both are ready to begin communicating.
+		*/
+		void connect();
+
+		/**
 			Reads in the latest data received from the radio.
 
 			Returns a Packet allocated with new if a complete packet has been

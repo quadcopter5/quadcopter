@@ -12,7 +12,7 @@ LDFLAGS = -L../lib
 BINDIR = bin
 SRCDIR = ../src
 
-TEST_NAMES = test_radio test_radioconnection
+TEST_NAMES = test_radio test_radioconnection test_radio_alternate
 
 
 all: dirs tests

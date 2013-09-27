@@ -16,7 +16,7 @@
 RadioConnection::RadioConnection(Radio *radio) {
 	if (!radio)
 		THROW_EXCEPT(RadioException,
-				"Invalid radio passed to RadioConnection");
+				"Invalid Radio passed to RadioConnection");
 
 	mRadio = radio;
 	mCurrentPacket = 0;
@@ -24,6 +24,15 @@ RadioConnection::RadioConnection(Radio *radio) {
 
 RadioConnection::~RadioConnection() {
 	delete mCurrentPacket;
+}
+
+void RadioConnection::connect() {
+	std::string response;
+	mRadio->write("Hi");
+	while (response.find("Hi") == std::string::npos) {
+		mRadio->read(response, 0);
+		usleep(500000);
+	}
 }
 
 Packet *RadioConnection::receive() {
