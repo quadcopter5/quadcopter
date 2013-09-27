@@ -27,8 +27,12 @@ int main(int argc, char **argv) {
 				switch (packet->getHeader()) {
 					case PKT_MOTION: {
 						PacketMotion *p = (PacketMotion *)packet;
-						std::cout << "PKT_MOTION" << std::endl;
-						std::cout << p->getX() << std::endl;
+						std::cout << "PKT_MOTION : "
+						          << "x = " << (unsigned int)p->getX()
+						          << ", y = " << (unsigned int)p->getY()
+						          << ", z = " << (unsigned int)p->getZ()
+						          << ", rot = " << (unsigned int)p->getRot()
+						          << std::endl;
 					}	break;
 
 					default:
@@ -36,6 +40,7 @@ int main(int argc, char **argv) {
 						break;
 				}
 				delete packet;
+				packet = 0;
 			}
 
 			usleep(100000);

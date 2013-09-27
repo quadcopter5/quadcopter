@@ -49,11 +49,12 @@ Packet *RadioConnection::receive() {
 			index = mUnhandledData.find(0x2A);
 			if (index != std::string::npos) {
 
-				if (index <= mUnhandledData.length() - 3) {
+				if (mUnhandledData.length() >= 3 &&
+						index <= mUnhandledData.length() - 3) {
+					++index;
 					// We have enough data to determine if this is actually
 					// the start of a packet
-					++index;
-					if (mUnhandledData.at(index) == 0xA2) {
+					if ((unsigned char)mUnhandledData.at(index) == 0xA2) {
 						// Determine packet type
 						++index;
 						found = true;
@@ -67,26 +68,29 @@ Packet *RadioConnection::receive() {
 								break;
 						}
 
-						if (found)
-							++index;
-					}
-				} else
-					++index;
+						if (found) {
+							// Erase packet start and header
+							mUnhandledData.erase(0, index + 1);
 
-				// Erase data that has been used
-				mUnhandledData.erase(0, index);
-
-				if (found) {
-					// Try to start reading into Packet
-					if (mCurrentPacket->feedData(mUnhandledData)) {
-						// Packet is complete
-						Packet *result = mCurrentPacket;
-						mCurrentPacket = 0;
-						return result;
+							// Try to start reading into Packet
+							if (mCurrentPacket->feedData(mUnhandledData)) {
+								// Packet is complete
+								Packet *result = mCurrentPacket;
+								mCurrentPacket = 0;
+								return result;
+							}
+						}
 					}
 				}
+
+				if (!found) {
+					// Erase used data
+					mUnhandledData.erase(0, index + 1);
+				}
+
 			} else {
 				// No 0x2A's were found
+				// Discard this data
 				mUnhandledData.clear();
 			}
 		}
@@ -100,8 +104,8 @@ void RadioConnection::send(const Packet *p) {
 	std::string message;
 
 	// Prepend with packet start and packet header
-	message.push_back((char)0x2A);
-	message.push_back((char)0xA2);
+	message.push_back((unsigned char)0x2A);
+	message.push_back((unsigned char)0xA2);
 	message.push_back(p->getHeader());
 
 	message.append(p->serialize());

@@ -1,5 +1,5 @@
 /*
-	endianness.c
+	endianness.cpp
 
 	Functions to determine system endianness during run-time, and to facilitate
 	swapping byte orders.
