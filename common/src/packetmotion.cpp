@@ -18,6 +18,15 @@ PacketMotion::PacketMotion() {
 	mCurrentField = 0;
 }
 
+PacketMotion::PacketMotion(uint8_t x, uint8_t y, uint8_t z, uint8_t rot) {
+	setX(x);
+	setY(y);
+	setZ(z);
+	setRot(rot);
+
+	mCurrentField = 0;
+}
+
 char PacketMotion::getHeader() const {
 	return PKT_MOTION;
 }

@@ -29,11 +29,6 @@ int main(int argc, char **argv) {
 				size_t index;
 				while ((index = buffer.find('\r')) != std::string::npos)
 					buffer[index] = '\n';
-
-//				char *pos;
-//				while ((pos = strchr(buffer, '\r')) != NULL)
-//					*pos = '\n';
-
 				std::cout << "Rx: " << buffer << std::endl;
 			}
 			bytes = radio.getInputQueueSize();

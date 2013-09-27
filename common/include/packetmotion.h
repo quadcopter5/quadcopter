@@ -32,6 +32,13 @@ class PacketMotion : public Packet {
 		PacketMotion();
 
 		/**
+			Constructor
+
+			Initializes fields to given values
+		*/
+		PacketMotion(uint8_t x, uint8_t y, uint8_t z, uint8_t rot);
+
+		/**
 			Gets the header of this specific Packet. In this case, this will
 			return PKT_MOTION
 		*/
