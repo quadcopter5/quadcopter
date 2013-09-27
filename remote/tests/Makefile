@@ -2,39 +2,39 @@
 # 
 # Makefile for test programs for remote
 
+COMMON = ../../common
+
 CC = g++
-CFLAGS = -I../include
+CFLAGS = -I../include -I$(COMMON)/include
 DEBUGFLAGS = -g -D_DEBUG
 LDFLAGS = -L../lib
 
 BINDIR = bin
 SRCDIR = ../src
 
+TEST_NAMES = test_radio test_radioconnection
+
 
 all: dirs tests
-
 
 dirs:
 	mkdir -p $(BINDIR)
 
-tests: $(BINDIR)/test_radio.x $(BINDIR)/test_radioconnection.x
+tests: source $(foreach name,$(TEST_NAMES),$(BINDIR)/$(name).x)
+
+source:
+	make -C .. debug
 
 
 # Tests
 
-$(BINDIR)/test_radio.x: test_radio.cpp $(SRCDIR)/radiolinux.cpp \
-		$(SRCDIR)/exception.cpp $(SRCDIR)/endianness.c
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_radio.cpp $(SRCDIR)/radiolinux.cpp \
-		$(SRCDIR)/exception.cpp $(SRCDIR)/endianness.c $(LDFLAGS) -o $@
+define TEST_TEMPLATE
+$$(BINDIR)/$(1).x: $(1).cpp ../lib/libremote_d.a ../lib/libcommon_d.a
+	$$(CC) $$(CFLAGS) $$(DEBUGFLAGS) $(1).cpp $$(LDFLAGS) -lremote_d \
+		-o $$@ -lcommon_d -lremote_d
+endef
 
-$(BINDIR)/test_radioconnection.x: test_radioconnection.cpp \
-		$(SRCDIR)/radioconnection.cpp $(SRCDIR)/packetmotion.cpp \
-		$(SRCDIR)/radiolinux.cpp $(SRCDIR)/exception.cpp \
-		$(SRCDIR)/endianness.c
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_radioconnection.cpp \
-		$(SRCDIR)/radioconnection.cpp $(SRCDIR)/packetmotion.cpp \
-		$(SRCDIR)/radiolinux.cpp $(SRCDIR)/exception.cpp \
-		$(SRCDIR)/endianness.c $(LDFLAGS) -o $@
+$(foreach name,$(TEST_NAMES),$(eval $(call TEST_TEMPLATE,$(name))))
 
 
 clean:
