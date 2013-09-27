@@ -103,7 +103,7 @@ void RadioConnection::send(const Packet *p) {
 	message.push_back((char)0x2A);
 	message.push_back((char)0xA2);
 	message.push_back(p->getHeader());
-	
+
 	message.append(p->serialize());
 	mRadio->write(message);
 }

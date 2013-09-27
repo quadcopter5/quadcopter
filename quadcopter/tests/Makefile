@@ -3,55 +3,38 @@
 #
 
 CC = g++
-CFLAGS = -I../include
+CFLAGS = -I../include -I../../common/include
 DEBUGFLAGS = -g -D_DEBUG
-LDFLAGS = -L../lib -lperipherals_d ../obj/exception_d.o
+LDFLAGS = -L../lib -lquadcopter_d -lcommon_d
 
 BINDIR = bin
 
-.PHONY: all dirs tests
+TEST_NAMES = test_gpio test_radiouart test_queuebuffer test_i2c test_pwm \
+		test_accelerometer test_motor
+
+
+.PHONY: all dirs tests source
 
 all: dirs tests
 
 
-dirs:
+dirs: $(BINDIR)/
+$(BINDIR)/:
 	mkdir -p $(BINDIR)
 
-tests: ../lib/libperipherals_d.a $(BINDIR)/test_gpio.x $(BINDIR)/test_uart.x \
-		$(BINDIR)/test_queuebuffer.x $(BINDIR)/test_i2c.x \
-		$(BINDIR)/test_uart_read.x $(BINDIR)/test_endian.x \
-		$(BINDIR)/test_pwm.x $(BINDIR)/test_accelerometer.x \
-		$(BINDIR)/test_motor.x
+tests: source $(foreach name,$(TEST_NAMES),$(BINDIR)/$(name).x)
+
+source:
 	make -C .. debug
 
 # Tests
 
-$(BINDIR)/test_gpio.x: test_gpio.c ../lib/libperipherals_d.a
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_gpio.c $(LDFLAGS) -o $@
+define TEST_TEMPLATE
+$$(BINDIR)/$(1).x: $(1).cpp ../lib/libquadcopter_d.a
+	$$(CC) $$(CFLAGS) $$(DEBUGFLAGS) $(1).cpp $$(LDFLAGS) -o $$@
+endef
 
-$(BINDIR)/test_uart.x: test_uart.c ../lib/libperipherals_d.a
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_uart.c $(LDFLAGS) -o $@
-
-$(BINDIR)/test_queuebuffer.x: test_queuebuffer.c ../lib/libperipherals_d.a
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_queuebuffer.c $(LDFLAGS) -o $@
-
-$(BINDIR)/test_i2c.x: test_i2c.cpp ../lib/libperipherals_d.a
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_i2c.cpp $(LDFLAGS) -o $@
-
-$(BINDIR)/test_uart_read.x: test_uart_read.c ../lib/libperipherals_d.a
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_uart_read.c $(LDFLAGS) -o $@
-
-$(BINDIR)/test_endian.x: test_endian.c ../lib/libperipherals_d.a
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_endian.c ../obj/endianness_d.o -o $@
-
-$(BINDIR)/test_pwm.x: test_pwm.cpp ../lib/libperipherals_d.a
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_pwm.cpp $(LDFLAGS) -o $@
-
-$(BINDIR)/test_accelerometer.x: test_accelerometer.cpp ../lib/libperipherals_d.a
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_accelerometer.cpp $(LDFLAGS) -o $@
-
-$(BINDIR)/test_motor.x: test_motor.cpp ../lib/libperipherals_d.a
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) test_motor.cpp $(LDFLAGS) -o $@
+$(foreach name,$(TEST_NAMES),$(eval $(call TEST_TEMPLATE,$(name))))
 
 
 clean:
