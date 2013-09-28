@@ -5,6 +5,7 @@
 */
 
 #include <string>
+#include <unistd.h>
 
 #include "exception.h"
 #include "radio.h"
@@ -29,10 +30,17 @@ RadioConnection::~RadioConnection() {
 void RadioConnection::connect() {
 	std::string response;
 	mRadio->write("Hi");
-	while (response.find("Hi") == std::string::npos) {
+
+	size_t index;
+	while ((index = response.find("Hi")) == std::string::npos) {
 		mRadio->read(response, 0);
 		usleep(500000);
 	}
+
+	// Keep the data after the acknowledge
+	mUnhandledData.assign(response, index + 2, std::string::npos);
+
+	mRadio->write("Hi");
 }
 
 Packet *RadioConnection::receive() {

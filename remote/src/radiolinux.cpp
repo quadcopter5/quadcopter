@@ -134,11 +134,14 @@ int RadioLinux::writeUBE32(uint32_t i) {
 }
 
 int RadioLinux::read(std::string &buffer, size_t numbytes) {
-	int bytes, totalbytes = 0;
+	int bytes, totalbytes = 0, readbytes = 4096;
 	char cbuf[4096];
 	std::string result;
 
-	while ((bytes = ::read(mFD, cbuf, 4096)) > 0
+	if (numbytes > 0)
+		readbytes = numbytes;
+
+	while ((bytes = ::read(mFD, cbuf, readbytes)) > 0
 			&& (numbytes == 0 || numbytes > 0 && totalbytes < numbytes)) {
 		if (bytes == -1)
 			THROW_EXCEPT(RadioException, "Failed to read from radio");
