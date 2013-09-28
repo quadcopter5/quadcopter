@@ -33,6 +33,7 @@ void RadioConnection::connect() {
 		mRadio->read(response, 0);
 		usleep(500000);
 	}
+	mRadio->write("Hi");
 }
 
 Packet *RadioConnection::receive() {

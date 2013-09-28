@@ -152,13 +152,5 @@ class RadioUART : public Radio {
 		void updateQueueBuffer();
 };
 
-/**
-	Returns a string containing a descripiton of the last error. If no error
-	has occurred since the last call to this function, then the string
-	"No Error" is returned.
-
-const char *uart_getLastError();
-*/
-
 #endif
 

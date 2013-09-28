@@ -19,6 +19,25 @@ int main(int argc, char **argv) {
 		RadioUART radio(57600, Radio::PARITY_EVEN);
 		RadioConnection connection(&radio);
 
+		while (true) {
+			Packet *packet;
+			while ((packet = connection.receive()) == 0)
+				usleep(100000);
+
+			switch (packet->getHeader()) {
+				case PKT_MOTION:
+					PacketMotion *p = (PacketMotion *)packet;
+					std::cout << "Received PKT_MOTION : "
+							<< "x = " << (unsigned int)p->getX()
+							<< ", y = " << (unsigned int)p->getY()
+							<< ", z = " << (unsigned int)p->getZ()
+							<< ", rot = " << (unsigned int)p->getRot()
+							<< std::endl;
+					break;
+			}
+
+			delete packet;
+		}
 
 		int num = 1;
 		while (num <= 10) {

@@ -166,6 +166,9 @@ int RadioUART::writeUBE32(uint32_t i) {
 int RadioUART::read(std::string &buffer, size_t numbytes) {
 	updateQueueBuffer();
 
+	if (numbytes == 0)
+		numbytes = getInputQueueSize();
+
 	int bytes;
 	char tempbuf[numbytes];
 	bytes = qb_pop(mQueueBuffer, tempbuf, numbytes);
