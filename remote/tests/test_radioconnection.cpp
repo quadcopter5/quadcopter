@@ -19,6 +19,13 @@ int main(int argc, char **argv) {
 		RadioLinux radio("/dev/ttyUSB0", 57600, Radio::PARITY_EVEN);
 		RadioConnection connection(&radio);
 
+		for (int i = 0; i < 10; ++i) {
+			PacketMotion packet(i, i, i, i);
+			connection.send(&packet);
+			std::cout << "Sent packet" << std::endl;
+			usleep(100000);
+		}
+
 		Packet *packet = 0;
 
 		while (true) {
