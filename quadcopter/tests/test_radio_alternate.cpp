@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
 		connection.connect();
 		std::cout << "Connected!" << std::endl;
 
-		int num;
+		int num, check;
 		while (true) {
 			// Send
 			num = 1;
@@ -32,15 +32,14 @@ int main(int argc, char **argv) {
 				connection.send(&p);
 				std::cout << "Sent PKT_MOTION : 0, 0, 0, " << num << std::endl;
 
-				usleep(10000);
+				usleep(1000);
 
 				++num;
 			}
 
-			std::cout << std::endl;
-
 			// Receive
 			num = 0;
+			check = 0;
 			while (num != 10) {
 				Packet *packet;
 				while ((packet = connection.receive()) == 0)
@@ -56,6 +55,11 @@ int main(int argc, char **argv) {
 						          << ", rot = " << (unsigned int)p->getRot()
 						          << std::endl;
 						num = p->getRot();
+						++check;
+						if (check != num) {
+							std::cout << "MISSED A PACKET!" << std::endl;
+							return 1;
+						}
 					}	break;
 
 					default:
@@ -65,8 +69,6 @@ int main(int argc, char **argv) {
 
 				delete packet;
 			}
-
-			std::cout << std::endl;
 		}
 
 	} catch (Exception &e) {
