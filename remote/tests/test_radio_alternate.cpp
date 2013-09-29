@@ -24,10 +24,11 @@ int main(int argc, char **argv) {
 		connection.connect();
 		std::cout << "Connected!" << std::endl;
 
-		int num;
+		int num, check;
 		while (true) {
 			// Receive
 			num = 0;
+			check = 0;
 			while (num != 10) {
 				Packet *packet;
 
@@ -51,6 +52,11 @@ int main(int argc, char **argv) {
 						          << ", rot = " << (unsigned int)p->getRot()
 						          << std::endl;
 						num = p->getRot();
+						++check;
+						if (num != check) {
+							std::cout << "MISSED A PACKET!" << std::endl;
+							return 1;
+						}
 					}	break;
 
 					default:

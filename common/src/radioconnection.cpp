@@ -59,56 +59,58 @@ Packet *RadioConnection::receive() {
 			return 0;
 	} else {
 		// Look for the start of a packet
-		size_t index = 0;
+		size_t startindex = 0;
 		bool found = false;
-		while (!found && index != std::string::npos) {
+		while (!found && mUnhandledData.length() >= 3) {
 
-			index = mUnhandledData.find(0x2A);
-			if (index != std::string::npos) {
+			startindex = mUnhandledData.find(0x2A);
+			if (startindex != std::string::npos
+					&& startindex <= mUnhandledData.length() - 3) {
 
-				if (mUnhandledData.length() >= 3 &&
-						index <= mUnhandledData.length() - 3) {
-					++index;
-					// We have enough data to determine if this is actually
-					// the start of a packet
-					if ((unsigned char)mUnhandledData.at(index) == 0xA2) {
-						// Determine packet type
-						++index;
-						found = true;
-						switch (mUnhandledData.at(index)) {
-							case PKT_MOTION:
-								mCurrentPacket = new PacketMotion();
-								break;
+				// We have enough data to determine if this is actually
+				// the start of a packet
+				if ((unsigned char)mUnhandledData.at(startindex + 1) == 0xA2) {
+					// Determine packet type
+					found = true;
+					switch (mUnhandledData.at(startindex + 2)) {
+						case PKT_MOTION:
+							mCurrentPacket = new PacketMotion();
+							break;
 
-							default:
-								found = false;
-								break;
-						}
-
-						if (found) {
-							// Erase packet start and header
-							mUnhandledData.erase(0, index + 1);
-
-							// Try to start reading into Packet
-							if (mCurrentPacket->feedData(mUnhandledData)) {
-								// Packet is complete
-								Packet *result = mCurrentPacket;
-								mCurrentPacket = 0;
-								return result;
-							}
-						}
+						default:
+							found = false;
+							break;
 					}
-				}
 
-				if (!found) {
-					// Erase used data
-					mUnhandledData.erase(0, index + 1);
-				}
+					if (found) {
+						// Erase packet start and header
+						mUnhandledData.erase(0, startindex + 3);
 
-			} else {
+						// Try to start reading into Packet
+						if (mCurrentPacket->feedData(mUnhandledData)) {
+							// Packet is complete
+							Packet *result = mCurrentPacket;
+							mCurrentPacket = 0;
+							return result;
+						}
+					} else {
+						// Erase until where header was supposed to be
+						mUnhandledData.erase(0, startindex + 2);
+					}
+
+				} else {
+					// This 0x2A is a false positive
+					// Erase up to/including 0x2A
+					mUnhandledData.erase(0, startindex + 1);
+				}
+			} else if (startindex != std::string::npos) {
 				// No 0x2A's were found
 				// Discard this data
 				mUnhandledData.clear();
+			} else {
+				// Not enough information after 0x2A
+				// Wait until next time when we have more data
+				mUnhandledData.erase(0, startindex);
 			}
 		}
 	}
