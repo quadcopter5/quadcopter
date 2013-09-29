@@ -67,8 +67,6 @@ int main(int argc, char **argv) {
 				delete packet;
 			}
 
-			std::cout << std::endl;
-
 			// Send
 			num = 1;
 			while (num <= 10) {
@@ -76,12 +74,10 @@ int main(int argc, char **argv) {
 				connection.send(&p);
 				std::cout << "Sent PKT_MOTION : 0, 0, 0, " << num << std::endl;
 
-				usleep(10000);
+				usleep(1000);
 
 				++num;
 			}
-
-			std::cout << std::endl;
 		}
 
 	} catch (Exception &e) {
