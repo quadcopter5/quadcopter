@@ -37,6 +37,10 @@ class Motor {
 			max_hightime should be the highest allowed speed for the electrical
 			system.
 
+			The constructor will set the PWM output to a priming signal. You
+			should wait at least 3 seconds after the constructor is called before
+			counting on the motors to respond to setSpeed().
+
 			Throws PWMException and I2CException.
 		*/
 		Motor(PWM *pwm, int channel, float min_hightime, float max_hightime);

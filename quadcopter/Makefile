@@ -44,15 +44,13 @@ $(BINDIR)/:
 # Main application
 #
 
-$(BINDIR)/quadcopter.x: $(OBJDIR)/quadcopter.o $(OBJDIR)/common/exception.o \
+$(BINDIR)/quadcopter.x: $(OBJDIR)/quadcopter.o $(LIBDIR)/libcommon.a \
 		$(LIBDIR)/libquadcopter.a
-	$(CC) $(OBJDIR)/quadcopter.o $(OBJDIR)/common/exception.o $(LDFLAGS) \
-		-lquadcopter -o $@
+	$(CC) $(OBJDIR)/quadcopter.o $(LDFLAGS) -lquadcopter -lcommon -o $@
 
-$(BINDIR)/quadcopter_d.x: $(OBJDIR)/quadcopter_d.o \
-		$(OBJDIR)/common/exception_d.o $(LIBDIR)/libquadcopter_d.a
-	$(CC) $(OBJDIR)/quadcopter_d.o $(OBJDIR)/common/exception_d.o $(LDFLAGS) \
-		-lquadcopter_d -o $@
+$(BINDIR)/quadcopter_d.x: $(OBJDIR)/quadcopter_d.o $(LIBDIR)/libcommon_d.a \
+		$(LIBDIR)/libquadcopter_d.a
+	$(CC) $(OBJDIR)/quadcopter_d.o $(LDFLAGS) -lquadcopter_d -lcommon_d -o $@
 
 
 $(OBJDIR)/quadcopter.o: $(SRCDIR)/quadcopter.cpp
@@ -90,52 +88,24 @@ $(foreach name,$(COMMON_NAMES),$(eval $(call COMMON_TEMPLATE,$(name))))
 # Quadcopter-specific objects
 #
 
-$(LIBDIR)/libquadcopter.a: $(OBJDIR)/gpio.o $(OBJDIR)/radiouart.o \
-		$(OBJDIR)/queuebuffer.o $(OBJDIR)/i2c.o $(OBJDIR)/pwm.o \
-		$(OBJDIR)/accelerometer.o $(OBJDIR)/motor.o
+QUAD_NAMES = geometry gpio radiouart queuebuffer i2c pwm accelerometer motor \
+		drive
+
+$(LIBDIR)/libquadcopter.a: \
+		$(foreach name,$(QUAD_NAMES),$(OBJDIR)/$(name).o)
+	ar rcs $@ $^
+$(LIBDIR)/libquadcopter_d.a: \
+		$(foreach name,$(QUAD_NAMES),$(OBJDIR)/$(name)_d.o)
 	ar rcs $@ $^
 
-$(LIBDIR)/libquadcopter_d.a: $(OBJDIR)/gpio_d.o $(OBJDIR)/radiouart_d.o \
-		$(OBJDIR)/queuebuffer_d.o $(OBJDIR)/i2c_d.o $(OBJDIR)/pwm_d.o \
-		$(OBJDIR)/accelerometer_d.o $(OBJDIR)/motor_d.o
-	ar rcs $@ $^
+define QUAD_TEMPLATE
+$$(OBJDIR)/$(1).o: $$(SRCDIR)/$(1).cpp
+	$$(CC) $$(CFLAGS) $$(RELEASEFLAGS) -c $$^ -o $$@
+$$(OBJDIR)/$(1)_d.o: $$(SRCDIR)/$(1).cpp
+	$$(CC) $$(CFLAGS) $$(DEBUGFLAGS) -c $$^ -o $$@
+endef
 
-$(OBJDIR)/gpio.o: $(SRCDIR)/gpio.c $(INCLUDEDIR)/gpio.h
-	$(CC) $(CFLAGS) $(RELEASEFLAGS) -c $(SRCDIR)/gpio.c -o $@
-$(OBJDIR)/gpio_d.o: $(SRCDIR)/gpio.c $(INCLUDEDIR)/gpio.h
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) -c $(SRCDIR)/gpio.c -o $@
-
-$(OBJDIR)/radiouart.o: $(SRCDIR)/radiouart.cpp $(INCLUDEDIR)/radiouart.h
-	$(CC) $(CFLAGS) $(RELEASEFLAGS) -c $(SRCDIR)/radiouart.cpp -o $@
-$(OBJDIR)/radiouart_d.o: $(SRCDIR)/radiouart.cpp $(INCLUDEDIR)/radiouart.h
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) -c $(SRCDIR)/radiouart.cpp -o $@
-
-$(OBJDIR)/queuebuffer.o: $(SRCDIR)/queuebuffer.c $(INCLUDEDIR)/queuebuffer.h
-	$(CC) $(CFLAGS) $(RELEASEFLAGS) -c $(SRCDIR)/queuebuffer.c -o $@
-$(OBJDIR)/queuebuffer_d.o: $(SRCDIR)/queuebuffer.c $(INCLUDEDIR)/queuebuffer.h
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) -c $(SRCDIR)/queuebuffer.c -o $@
-
-$(OBJDIR)/i2c.o: $(SRCDIR)/i2c.cpp $(INCLUDEDIR)/i2c.h
-	$(CC) $(CFLAGS) $(RELEASEFLAGS) -c $(SRCDIR)/i2c.cpp -o $@
-$(OBJDIR)/i2c_d.o: $(SRCDIR)/i2c.cpp $(INCLUDEDIR)/i2c.h
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) -c $(SRCDIR)/i2c.cpp -o $@
-
-$(OBJDIR)/pwm.o: $(SRCDIR)/pwm.cpp $(INCLUDEDIR)/pwm.h
-	$(CC) $(CFLAGS) $(RELEASEFLAGS) -c $(SRCDIR)/pwm.cpp -o $@
-$(OBJDIR)/pwm_d.o: $(SRCDIR)/pwm.cpp $(INCLUDEDIR)/pwm.h
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) -c $(SRCDIR)/pwm.cpp -o $@
-
-$(OBJDIR)/accelerometer.o: $(SRCDIR)/accelerometer.cpp \
-		$(INCLUDEDIR)/accelerometer.h
-	$(CC) $(CFLAGS) $(RELEASEFLAGS) -c $(SRCDIR)/accelerometer.cpp -o $@
-$(OBJDIR)/accelerometer_d.o: $(SRCDIR)/accelerometer.cpp \
-		$(INCLUDEDIR)/accelerometer.h
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) -c $(SRCDIR)/accelerometer.cpp -o $@
-
-$(OBJDIR)/motor.o: $(SRCDIR)/motor.cpp $(INCLUDEDIR)/motor.h
-	$(CC) $(CFLAGS) $(RELEASEFLAGS) -c $(SRCDIR)/motor.cpp -o $@
-$(OBJDIR)/motor_d.o: $(SRCDIR)/motor.cpp $(INCLUDEDIR)/motor.h
-	$(CC) $(CFLAGS) $(DEBUGFLAGS) -c $(SRCDIR)/motor.cpp -o $@
+$(foreach name,$(QUAD_NAMES),$(eval $(call QUAD_TEMPLATE,$(name))))
 
 
 clean:

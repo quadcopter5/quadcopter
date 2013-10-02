@@ -17,7 +17,7 @@
 
 #include "pwm.h"
 #include "motor.h"
-#include "acceleromter.h"
+#include "accelerometer.h"
 #include "geometry.h"
 
 class Drive {
@@ -98,7 +98,7 @@ class Drive {
 
 			This is set according to the constructor.
 		*/
-		std::vector<Motor> mMotors;
+		Motor *mMotors[4];
 
 		// Holds the latest values read from the accelerometer
 		Vector3<float>     mAccelValue;
