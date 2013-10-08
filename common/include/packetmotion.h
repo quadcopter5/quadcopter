@@ -2,12 +2,13 @@
 	packetmotion.h
 
 	PacketMotion class - packet type that holds motion information.
+		[Incoming] This type is sent from remote to quadcopter
 
 	Fields:
-		x   : uint8_t, velocity in (-)left, right(+) axis
-		y   : uint8_t, velocity in (-)backward, forward(+) axis
-		z   : uint8_t, velocity in (-)down, up(+) axis
-		rot : uint8_t, rotational velocity in (-)CCW, CW(+) axis
+		x   : int8_t, velocity in (-)left, right(+) axis
+		y   : int8_t, velocity in (-)backward, forward(+) axis
+		z   : int8_t, velocity in (-)down, up(+) axis
+		rot : int8_t, rotational velocity in (-)CCW, CW(+) axis
 
 	See packet.h for a description of the virtual member functions.
 */
@@ -36,7 +37,10 @@ class PacketMotion : public Packet {
 
 			Initializes fields to given values
 		*/
-		PacketMotion(uint8_t x, uint8_t y, uint8_t z, uint8_t rot);
+		PacketMotion(int8_t x,
+				int8_t y,
+				int8_t z,
+				int8_t rot);
 
 		/**
 			Gets the header of this specific Packet. In this case, this will
@@ -53,15 +57,15 @@ class PacketMotion : public Packet {
 		/**
 			Getters/Setters for packet fields
 		*/
-		uint8_t getX() const;
-		uint8_t getY() const;
-		uint8_t getZ() const;
-		uint8_t getRot() const;
+		int8_t getX() const;
+		int8_t getY() const;
+		int8_t getZ() const;
+		int8_t getRot() const;
 
-		void setX(uint8_t x);
-		void setY(uint8_t y);
-		void setZ(uint8_t z);
-		void setRot(uint8_t rot);
+		void setX(int8_t x);
+		void setY(int8_t y);
+		void setZ(int8_t z);
+		void setRot(int8_t rot);
 
 	private:
 		// Packet fields
@@ -69,7 +73,7 @@ class PacketMotion : public Packet {
 		//    1 : y
 		//    2 : z
 		//    3 : rot
-		uint8_t mFields[4];
+		int8_t mFields[4];
 
 		int mCurrentField;
 };

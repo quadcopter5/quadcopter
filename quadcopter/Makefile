@@ -65,7 +65,8 @@ $(OBJDIR)/quadcopter_d.o: $(SRCDIR)/quadcopter.cpp
 # (shared portion between quadcopter and remote)
 #
 
-COMMON_NAMES = exception endianness packetmotion radioconnection
+COMMON_NAMES = exception endianness radioconnection packetmotion \
+		packetdiagnostic
 
 $(LIBDIR)/libcommon.a: \
 		$(foreach name,$(COMMON_NAMES),$(OBJDIR)/common/$(name).o)
