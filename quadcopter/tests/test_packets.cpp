@@ -13,7 +13,7 @@
 #include <sys/time.h>
 
 #include "radio.h"
-#include "radiolinux.h"
+#include "radiouart.h"
 #include "radioconnection.h"
 #include "packetmotion.h"
 #include "packetdiagnostic.h"
@@ -21,7 +21,7 @@
 int main(int argc, char **argv) {
 	try {
 
-		RadioLinux radio("/dev/ttyUSB0", 57600, Radio::PARITY_EVEN);
+		RadioUART radio(57600, Radio::PARITY_EVEN);
 		RadioConnection connection(&radio);
 
 		connection.connect();

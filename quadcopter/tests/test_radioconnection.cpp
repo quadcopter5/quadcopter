@@ -7,6 +7,7 @@
 #include <string>
 #include <iostream>
 #include <stdint.h>
+#include <unistd.h>
 
 #include "radio.h"
 #include "radiouart.h"

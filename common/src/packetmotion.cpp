@@ -18,7 +18,7 @@ PacketMotion::PacketMotion() {
 	mCurrentField = 0;
 }
 
-PacketMotion::PacketMotion(uint8_t x, uint8_t y, uint8_t z, uint8_t rot) {
+PacketMotion::PacketMotion(int8_t x, int8_t y, int8_t z, int8_t rot) {
 	setX(x);
 	setY(y);
 	setZ(z);
@@ -38,7 +38,7 @@ bool PacketMotion::feedData(std::string &buffer) {
 			mCurrentField = 0;
 
 		while (mCurrentField < 4 && buffer.length() > 0) {
-			mFields[mCurrentField] = (uint8_t)buffer.at(0);
+			mFields[mCurrentField] = (int8_t)buffer.at(0);
 			buffer.erase(0, 1); // Erase first byte
 			++mCurrentField;
 		}
@@ -61,35 +61,35 @@ std::string PacketMotion::serialize() const {
 	return result;
 }
 
-uint8_t PacketMotion::getX() const {
+int8_t PacketMotion::getX() const {
 	return mFields[0];
 }
 
-uint8_t PacketMotion::getY() const {
+int8_t PacketMotion::getY() const {
 	return mFields[1];
 }
 
-uint8_t PacketMotion::getZ() const {
+int8_t PacketMotion::getZ() const {
 	return mFields[2];
 }
 
-uint8_t PacketMotion::getRot() const {
+int8_t PacketMotion::getRot() const {
 	return mFields[3];
 }
 
-void PacketMotion::setX(uint8_t x) {
+void PacketMotion::setX(int8_t x) {
 	mFields[0] = x;
 }
 
-void PacketMotion::setY(uint8_t y) {
+void PacketMotion::setY(int8_t y) {
 	mFields[1] = y;
 }
 
-void PacketMotion::setZ(uint8_t z) {
+void PacketMotion::setZ(int8_t z) {
 	mFields[2] = z;
 }
 
-void PacketMotion::setRot(uint8_t rot) {
+void PacketMotion::setRot(int8_t rot) {
 	mFields[3] = rot;
 }
 
