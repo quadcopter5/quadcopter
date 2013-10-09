@@ -13,6 +13,7 @@
 #include "radioconnection.h"
 
 #include "packetmotion.h"
+#include "packetdiagnostic.h"
 
 RadioConnection::RadioConnection(Radio *radio) {
 	if (!radio)
@@ -75,6 +76,10 @@ Packet *RadioConnection::receive() {
 					switch (mUnhandledData.at(startindex + 2)) {
 						case PKT_MOTION:
 							mCurrentPacket = new PacketMotion();
+							break;
+
+						case PKT_DIAGNOSTIC:
+							mCurrentPacket = new PacketDiagnostic();
 							break;
 
 						default:
