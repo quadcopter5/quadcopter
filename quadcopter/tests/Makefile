@@ -31,7 +31,7 @@ source:
 # Tests
 
 define TEST_TEMPLATE
-$$(BINDIR)/$(1).x: $(1).cpp ../lib/libquadcopter_d.a
+$$(BINDIR)/$(1).x: $(1).cpp ../lib/libquadcopter_d.a ../lib/libcommon_d.a
 	$$(CC) $$(CFLAGS) $$(DEBUGFLAGS) $(1).cpp $$(LDFLAGS) -o $$@
 endef
 
