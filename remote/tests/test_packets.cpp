@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
 			}
 
 			if (times > 300)
-				; // std::cout << "Timeout... Switching to send" << std::endl;
+				std::cout << "Timeout... Switching to send" << std::endl;
 			else {
 				switch (packet->getHeader()) {
 					case PKT_MOTION: {
@@ -110,6 +110,8 @@ int main(int argc, char **argv) {
 					packet = 0;
 				}	break;
 			}
+
+			usleep(100000);
 		}
 
 	} catch (Exception &e) {

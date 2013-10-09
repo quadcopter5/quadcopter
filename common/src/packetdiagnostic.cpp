@@ -57,7 +57,8 @@ bool PacketDiagnostic::feedData(std::string &buffer) {
 				LEToHost(&mAccel[mCurrentField - 1], (float *)&buffer[0], 4);
 				buffer.erase(0, 4);
 				++mCurrentField;
-			}
+			} else
+				return false;
 		}
 
 		if (mCurrentField == 4)
