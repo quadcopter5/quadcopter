@@ -11,7 +11,7 @@ BINDIR = bin
 
 TEST_NAMES = test_gpio test_radiouart test_queuebuffer test_i2c test_pwm \
 		test_accelerometer test_motor test_radioconnection test_radio_alternate \
-		test_orientation
+		test_orientation test_packets
 
 
 .PHONY: all dirs tests source

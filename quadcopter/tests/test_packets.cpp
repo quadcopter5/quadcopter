@@ -24,6 +24,7 @@ int main(int argc, char **argv) {
 		RadioUART radio(57600, Radio::PARITY_EVEN);
 		RadioConnection connection(&radio);
 
+		std::cout << "Waiting for connection..." << std::endl;
 		connection.connect();
 		std::cout << "Connected!" << std::endl;
 
@@ -38,7 +39,7 @@ int main(int argc, char **argv) {
 			}
 
 			if (times > 300)
-				std::cout << "Timeout... Switching to send" << std::endl;
+				; // std::cout << "Timeout... Switching to send" << std::endl;
 			else {
 				switch (packet->getHeader()) {
 					case PKT_MOTION: {
@@ -79,14 +80,15 @@ int main(int argc, char **argv) {
 				// PKT_MOTION
 				default:
 				case 0: {
-					int x = rand() % 255,
-						y = rand() % 255,
-						z = rand() % 255,
-						rot = rand() % 255;
+					int8_t x = (rand() % 255) - 128,
+					       y = (rand() % 255) - 128,
+					       z = (rand() % 255) - 128,
+					       rot = (rand() % 255) - 128;
 					packet = new PacketMotion(x, y, z, rot);
 					connection.send(packet);
-					std::cout << "Sent PKT_MOTION : " << x << ", "
-							<< y << ", " << z << ", " << rot << std::endl;
+					std::cout << "Sent PKT_MOTION : " << (int)x << ", "
+							<< (int)y << ", " << (int)z << ", " << (int)rot
+							<< std::endl;
 
 					delete packet;
 					packet = 0;
@@ -94,22 +96,20 @@ int main(int argc, char **argv) {
 
 				// PKT_DIAGNOSTIC
 				case 1: {
-					int   batt = rand() % 255;
-					float x = (float)(rand() % 255) / 255.0f,
-					      y = (float)(rand() % 255) / 255.0f,
-					      z = (float)(rand() % 255) / 255.0f;
+					int8_t batt = (rand() % 255) - 128;
+					float  x = (float)(rand() % 255) / 255.0f,
+					       y = (float)(rand() % 255) / 255.0f,
+					       z = (float)(rand() % 255) / 255.0f;
 
 					packet = new PacketDiagnostic(batt, x, y, z);
 					connection.send(packet);
-					std::cout << "Sent PKT_DIAGNOSTIC : " << batt << ", "
+					std::cout << "Sent PKT_DIAGNOSTIC : " << (int)batt << ", "
 							<< x << ", " << y << ", " << z << std::endl;
 
 					delete packet;
 					packet = 0;
 				}	break;
 			}
-
-			usleep(500000);
 		}
 
 	} catch (Exception &e) {
