@@ -13,7 +13,7 @@ BINDIR = bin
 SRCDIR = ../src
 
 TEST_NAMES = test_radio test_radioconnection test_radio_alternate \
-		test_packets
+		test_packets test_stabilize
 
 
 all: dirs tests
