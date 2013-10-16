@@ -1,8 +1,9 @@
 /*
-	Quadcopter Main
+	test_stabilize.cpp
 
-	This is the starting point for the resident program on the RaspberryPi. It
-	is meant to start during boot time.
+	Test for quadcopter stabilization. This is partly a test for the physical
+	movement of the quadcopter to figure out necessary components of the
+	stabilize algorithm.
 */
 
 #include <iostream>

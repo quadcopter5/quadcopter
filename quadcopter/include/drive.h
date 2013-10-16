@@ -92,7 +92,7 @@ class Drive {
 			   0     1
 			     \ /
 			     / \
-				3     2
+			   3     2
 
 			    (rear)
 

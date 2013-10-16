@@ -43,13 +43,13 @@ $(BINDIR)/:
 # Main application
 #
 
-$(BINDIR)/remote.x: $(OBJDIR)/remote.o $(OBJDIR)/common/exception.o \
+$(BINDIR)/remote.x: $(OBJDIR)/remote.o $(LIBDIR)/libremote.a \
 		$(LIBDIR)/libcommon.a
-	$(CC) $^ $(LDFLAGS) -lcommon -o $@
+	$(CC) $^ $(LDFLAGS) -lcommon -lremote -o $@
 
-$(BINDIR)/remote_d.x: $(OBJDIR)/remote_d.o \
-		$(OBJDIR)/common/exception_d.o $(LIBDIR)/libcommon_d.a
-	$(CC) $^ $(LDFLAGS) -lcommon_d -o $@
+$(BINDIR)/remote_d.x: $(OBJDIR)/remote_d.o $(LIBDIR)/libremote_d.a \
+		$(LIBDIR)/libcommon_d.a
+	$(CC) $^ $(LDFLAGS) -lcommon_d -lremote_d -o $@
 
 
 $(OBJDIR)/remote.o: $(SRCDIR)/remote.cpp

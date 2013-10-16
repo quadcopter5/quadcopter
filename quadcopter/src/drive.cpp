@@ -1,7 +1,8 @@
 /*
 	drive.h
 
-	Drive class - controls the motors of a quadcopter.
+	Drive class - controls the motors of a quadcopter for stabilization and
+		motion. Supports translational and rotational (yaw) motion.
 */
 
 // temporary for debugging
@@ -53,8 +54,8 @@ void Drive::update() {
 	Vector2<float> xz(mAccelValue.x, mAccelValue.z);
 	Vector2<float> yz(mAccelValue.y, mAccelValue.z);
 
-	double y_angle = (180.0 * asin(mAccelValue.x / magnitude(xz))) / PI;
-	double x_angle = (180.0 * asin(mAccelValue.y / magnitude(yz))) / PI;
+	double y_angle = asin(mAccelValue.x / magnitude(xz)) * 180.0 / PI;
+	double x_angle = asin(mAccelValue.y / magnitude(yz)) * 180.0 / PI;
 
 	float motorspeeds[4];
 	for (int i = 0; i < 4; ++i)
@@ -67,6 +68,14 @@ void Drive::update() {
 	motorspeeds[1] += -d_ends - d_sides;
 	motorspeeds[2] += d_ends - d_sides;
 	motorspeeds[3] += d_ends + d_sides;
+
+	// Temporary disable front-left and rear-right motors
+	motorspeeds[0] = 
+	motorspeeds[2] = 0.0f;
+
+	// Add z-component from translate
+	for (int i = 0; i < 4; ++i)
+		motorspeeds[i] += mTranslate.z;
 
 	std::cout << "Front left = " << motorspeeds[0] << std::endl;
 	std::cout << "Front right = " << motorspeeds[1] << std::endl;

@@ -1,10 +1,8 @@
 /**
-	remote.cpp
+	test_stabilize.cpp
 
-	The entry point for the remote program.
-
-	This program controls the quadcopter via radio, which is connected to
-	the computer through USB.
+	Program for controlling test_stabilize on the quadcopter. Simply sends
+	a Z coordinate for translational motion according to keypresses W/S
 */
 
 #include <iostream>
