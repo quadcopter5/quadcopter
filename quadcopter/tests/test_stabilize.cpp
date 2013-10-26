@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
 	memcpy(&in_newattr, &in_oldattr, sizeof(struct termios));
 
 	// Set console attributes
-	in_newattr.c_lflag = 0;
+	in_newattr.c_lflag = ISIG;
 	in_newattr.c_cc[VMIN] = 0;
 	in_newattr.c_cc[VTIME] = 0;
 
@@ -50,9 +50,11 @@ int main(int argc, char **argv) {
 		Accelerometer accel(&i2c, 0x53, Accelerometer::RANGE_2G,
 				Accelerometer::SRATE_50HZ);
 
+/*
 		std::cout << "Waiting for connection..." << std::endl;
 		connection.connect();
 		std::cout << "Connected!" << std::endl;
+*/
 
 		Drive drive(&pwm, &accel, 0, 2, 5, 7);
 
@@ -65,14 +67,23 @@ int main(int argc, char **argv) {
 			// Read any available packets
 			while ((pkt = connection.receive()) != 0) {
 				switch (pkt->getHeader()) {
-					case PKT_MOTION: {
+					case PKT_MOTION:
+					{
 						PacketMotion *p = (PacketMotion *)pkt;
-						if (p->getRot())
+						if (p->getRot()) {
 							running = false;
-						else
+							std::cout << "Received QUIT signal" << std::endl;
+						}
+						else {
+							std::cout << "Received packet, z = "
+									<< (int)p->getZ() << std::endl;
 							drive.move(Vector3<float>(0.0f, 0.0f,
-									(float)p->getZ() / 255.0f));
-					} break;
+									(float)p->getZ() / 128.0f));
+						}
+					}	break;
+
+					default:
+						break;
 				}
 				delete pkt;
 				pkt = 0;
