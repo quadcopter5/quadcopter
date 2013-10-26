@@ -29,6 +29,12 @@ class Drive {
 			object. Each channel corresponds to the physical position of the
 			motor it controls, as described by the argument name.
 
+			The function will block for 3 seconds, waiting for motors to be
+			primed.
+
+			smoothing controls how many accelerometer frames are averaged
+			(1 frame corresponds to a call to update())
+
 			Throws PWMException and I2CException.
 		*/
 		Drive(PWM *pwm,
@@ -36,7 +42,8 @@ class Drive {
 				int frontleft,
 				int frontright,
 				int rearright,
-				int rearleft);
+				int rearleft,
+				int smoothing = 3);
 
 		/**
 			Destructor
@@ -100,12 +107,28 @@ class Drive {
 		*/
 		Motor *mMotors[4];
 
-		// Holds the latest values read from the accelerometer
-		Vector3<float>     mAccelValue;
+		// How many frames of accelerometer values to average
+		int mSmoothing;
+
+		// Array holding the [mSmoothing] latest values read from the
+		// accelerometer.
+		// Most recent is located in mAccelValueCurrent (circular buffer) 
+		Vector3<float> *mAccelValue;
+		int mAccelValueCurrent;
 
 		// The last inputted values
 		float          mRotate;
 		Vector3<float> mTranslate;
+
+		/**
+			Update the mAccelValue array
+		*/
+		void updateAccelerometer();
+
+		/**
+			Returns the average of the values in mAccelValue
+		*/
+		Vector3<float> averageAccelerometer();
 };
 
 #endif

@@ -64,7 +64,7 @@ int main(int argc, char **argv) {
 		std::cout << "Connected!" << std::endl;
 */
 
-		Drive drive(&pwm, &accel, 0, 2, 5, 7);
+		Drive drive(&pwm, &accel, 0, 2, 5, 7, 10);
 
 		char   c;
 		bool   running = true;
@@ -98,7 +98,7 @@ int main(int argc, char **argv) {
 			}
 
 			drive.update();
-			usleep(50000);
+			usleep(20000); // 20,000 us = 0.02 ms = accelerometer update rate
 		}
 
 	} catch (Exception &e) {
