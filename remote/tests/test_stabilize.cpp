@@ -6,10 +6,12 @@
 */
 
 #include <iostream>
+#include <stdlib.h>
 #include <stdio.h>
 #include <string>
 #include <string.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "radiolinux.h"
 #include "radioconnection.h"
@@ -17,25 +19,30 @@
 #include "packetmotion.h"
 #include "packetdiagnostic.h"
 
+struct termios in_oldattr = { 0 },
+               in_newattr = { 0 };
+
+void sig_interrupt(int sig) {
+	tcsetattr(STDIN_FILENO, TCSANOW, &in_oldattr);
+}
+
+void quit(int code) {
+	tcsetattr(STDIN_FILENO, TCSANOW, &in_oldattr);
+	exit(code);
+}
+
 int main(int argc, char **argv) {
 
 	// Get current console termios attributes (so we can restore it later)
-	struct termios in_oldattr, in_newattr;
 	tcgetattr(STDIN_FILENO, &in_oldattr);
 	memcpy(&in_newattr, &in_oldattr, sizeof(struct termios));
 
 	// Set console attributes
-	in_newattr.c_lflag = 0;
+	in_newattr.c_lflag = ISIG;
 	in_newattr.c_cc[VMIN] = 0;
 	in_newattr.c_cc[VTIME] = 0;
-	in_newattr.c_cc[VINTR] = 3;
 
 	tcsetattr(STDIN_FILENO, TCSANOW, &in_newattr);
-
-	usleep(3000000);
-
-	tcsetattr(STDIN_FILENO, TCSANOW, &in_oldattr);
-	return 0;
 
 	try {
 		RadioLinux radio("/dev/ttyUSB0", 57600, Radio::PARITY_EVEN);
@@ -48,43 +55,47 @@ int main(int argc, char **argv) {
 		std::cout << "Use W and S to move up and down" << std::endl;
 
 		char c;
+		int bytes;
+
+		char value = 0;
 		bool running = true;
 		while (running) {
-			c = read(STDIN_FILENO, &c, 1);
-			switch (c) {
-				case 'q': {
-					PacketMotion p(0, 0, 0, 64);
-					connection.send(&p);
-					std::cout << "Sent \"quit\" signal" << std::endl;
-					running = false;
-				}	break;
-				case 'w': {
-					PacketMotion p(0, 0, 32, 0);
-					connection.send(&p);
-					std::cout << "Sent +z signal" << std::endl;
-				}	break;
-				case 's': {
-					PacketMotion p(0, 0, -32, 0);
-					connection.send(&p);
-					std::cout << "Sent -z signal" << std::endl;
-				}	break;
-				default:
-					break;
+			while ((bytes = read(STDIN_FILENO, &c, 1)) > 0) {
+				switch (c) {
+					case 'q': {
+						PacketMotion p(0, 0, 0, 64);
+						connection.send(&p);
+						std::cout << "Sent \"quit\" signal" << std::endl;
+						running = false;
+					}	break;
+					case 'w': {
+						value += 4;
+						PacketMotion p(0, 0, value, 0);
+						connection.send(&p);
+						std::cout << "Sent z signal = " << (int)value
+								<< std::endl;
+					}	break;
+					case 's': {
+						value -= 4;
+						PacketMotion p(0, 0, value, 0);
+						connection.send(&p);
+						std::cout << "Sent z signal = " << (int)value
+								<< std::endl;
+					}	break;
+					default:
+						break;
+				}
 			}
 
-			usleep(100000);
+			usleep(50000);
 		}
 
 	} catch (Exception &e) {
 		std::cout << "EXCEPTION: " << e.getDescription() << std::endl;
-		return -1;
+		quit(-1);
 	}
 
 	std::cout << "Quitting..." << std::endl;
-	tcsetattr(STDIN_FILENO, TCSANOW, &in_oldattr);
-	
-	usleep(500000);
-
-	return 0;
+	quit(0);
 }
 
