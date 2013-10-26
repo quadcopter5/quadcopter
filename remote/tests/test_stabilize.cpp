@@ -22,10 +22,6 @@
 struct termios in_oldattr = { 0 },
                in_newattr = { 0 };
 
-void sig_interrupt(int sig) {
-	tcsetattr(STDIN_FILENO, TCSANOW, &in_oldattr);
-}
-
 void quit(int code) {
 	tcsetattr(STDIN_FILENO, TCSANOW, &in_oldattr);
 	exit(code);

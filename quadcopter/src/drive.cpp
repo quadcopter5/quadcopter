@@ -6,7 +6,7 @@
 */
 
 // temporary for debugging
-#include <iostream>
+#include <stdio.h>
 
 #include <math.h>
 #include <unistd.h>
@@ -69,19 +69,18 @@ void Drive::update() {
 	motorspeeds[2] += d_ends - d_sides;
 	motorspeeds[3] += d_ends + d_sides;
 
-	// Temporary disable front-left and rear-right motors
-	motorspeeds[0] = 
-	motorspeeds[2] = 0.0f;
-
 	// Add z-component from translate
 	for (int i = 0; i < 4; ++i)
 		motorspeeds[i] += mTranslate.z;
 
-	std::cout << "Front left = " << motorspeeds[0] << std::endl;
-	std::cout << "Front right = " << motorspeeds[1] << std::endl;
-	std::cout << "Rear right = " << motorspeeds[2] << std::endl;
-	std::cout << "Rear left = " << motorspeeds[3] << std::endl;
-	std::cout << std::endl;
+	// Temporary disable front-left and rear-right motors
+	motorspeeds[0] = 
+	motorspeeds[2] = 0.0f;
+
+	printf("Front left = %.5f", motorspeeds[0]);
+	printf(" | Front right = %.5f", motorspeeds[1]);
+	printf(" | Rear right = %.5f", motorspeeds[2]);
+	printf(" | Rear left = %.5f\n", motorspeeds[3]);
 
 	for (int i = 0; i < 4; ++i)
 		mMotors[i]->setSpeed(motorspeeds[i]);

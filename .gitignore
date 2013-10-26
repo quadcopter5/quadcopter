@@ -19,3 +19,6 @@
 *.exe
 *.dll
 
+# vim Swap files
+.*.swp
+

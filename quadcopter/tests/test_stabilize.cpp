@@ -7,10 +7,12 @@
 */
 
 #include <iostream>
+#include <stdlib.h>
 #include <string.h>
 
 #include <unistd.h>
 #include <termios.h>
+#include <signal.h>
 
 #include "exception.h"
 #include "i2c.h"
@@ -25,10 +27,16 @@
 #include "packetmotion.h"
 #include "packetdiagnostic.h"
 
+struct termios in_oldattr, in_newattr;
+
+void quit(int code) {
+	tcsetattr(STDIN_FILENO, TCSANOW, &in_oldattr);
+	exit(code);
+}
+
 int main(int argc, char **argv) {
 
 	// Get current console termios attributes (so we can restore it later)
-	struct termios in_oldattr, in_newattr;
 	tcgetattr(STDIN_FILENO, &in_oldattr);
 	memcpy(&in_newattr, &in_oldattr, sizeof(struct termios));
 
@@ -95,17 +103,13 @@ int main(int argc, char **argv) {
 
 	} catch (Exception &e) {
 		std::cout << "EXCEPTION: " << e.getDescription() << std::endl;
-		return -1;
+		quit(-1);
 	} catch (...) {
 		std::cout << "UNKNOWN EXCEPTION" << std::endl;
-		return -1;
+		quit(-1);
 	}
 
 	std::cout << "Quitting..." << std::endl;
-	usleep(1000000);
-
-	tcsetattr(STDIN_FILENO, TCSANOW, &in_oldattr);
-
-	return 0;
+	quit(0);
 }
 
