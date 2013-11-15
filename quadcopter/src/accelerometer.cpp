@@ -49,7 +49,10 @@ Accelerometer::Accelerometer(I2C *i2c, uint8_t slaveaddr, Range range,
 }
 
 Accelerometer::~Accelerometer() {
-	setSleep(true);
+	try {
+		setSleep(true);
+	} catch (...)
+		{ /* Don't care... just make sure destructor finishes */ }
 }
 
 void Accelerometer::setSleep(bool sleep) {

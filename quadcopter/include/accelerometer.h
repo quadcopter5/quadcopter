@@ -49,7 +49,7 @@ class Accelerometer {
 			by the user of this class.
 
 			Also, the user must ensure that the I2C object remains valid for as
-			long as this I2C_PWM object is used.
+			long as this Accelerometer object is used.
 
 				i2c       : the I2C connection to communicate through
 				slaveaddr : I2C slave address of the ADXL345
