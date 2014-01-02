@@ -58,11 +58,9 @@ int main(int argc, char **argv) {
 		Accelerometer accel(&i2c, 0x53, Accelerometer::RANGE_2G,
 				Accelerometer::SRATE_50HZ);
 
-/*
 		std::cout << "Waiting for connection..." << std::endl;
 		connection.connect();
 		std::cout << "Connected!" << std::endl;
-*/
 
 		Drive drive(&pwm, &accel, 0, 2, 5, 7, 10);
 

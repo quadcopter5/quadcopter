@@ -16,12 +16,12 @@ int main(int argc, char **argv) {
 		PWM pwm(&connection, 0x40);
 		pwm.setFrequency(50);
 
-		pwm.setHighTime(8, 0.6f);
-		std::cout << "Set High Time for Channel 8 to 0.6 ms" << std::endl;
+		pwm.setHighTime(8, 0.68f);
+		std::cout << "Set High Time for Channel 8 to 0.68 ms" << std::endl;
 		std::cin.ignore();
 
-		pwm.setHighTime(8, 2.6f);
-		std::cout << "Set High Time for Channel 8 to 2.6 ms" << std::endl;
+		pwm.setHighTime(8, 0.6f);
+		std::cout << "Set High Time for Channel 8 to 0.6 ms" << std::endl;
 		std::cin.ignore();
 
 		pwm.setLoad(8, 0.075f); // 0.075% load of 20ms (= 1.5ms)

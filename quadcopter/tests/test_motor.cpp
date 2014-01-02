@@ -25,11 +25,15 @@ int main(int argc, char **argv) {
 		std::cout << "Priming..." << std::endl;
 
 		Motor *motors[4];
-		for (int i = 0; i < 4; ++i)
-			motors[i] = new Motor(&pwm, i, 1.25f, 1.4f);
+		motors[0] = new Motor(&pwm, 0, 1.25, 1.4f);
+		motors[1] = new Motor(&pwm, 2, 1.25, 1.4f);
+		motors[2] = new Motor(&pwm, 5, 1.25, 1.4f);
+		motors[3] = new Motor(&pwm, 7, 1.25, 1.4f);
+//		for (int i = 0; i < 4; ++i)
+//			motors[i] = new Motor(&pwm, i, 1.25f, 1.4f);
 
 		usleep(3000000);
-		std::cout << "Primed motors on channels 0-3" << std::endl;
+		std::cout << "Primed motors on channels 0, 2, 5, and 7" << std::endl;
 
 		char buffer[10];
 		bool running = true;
