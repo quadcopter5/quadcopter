@@ -108,6 +108,11 @@ void Drive::update() {
 		mMotors[i]->setSpeed(motorspeeds[i]);
 }
 
+void Drive::stop() {
+	for (int i = 0; i < 4; ++i)
+		mMotors[i]->setSpeed(0.0f);
+}
+
 /*
 	Private member functions
 */

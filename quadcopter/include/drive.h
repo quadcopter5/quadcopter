@@ -60,6 +60,8 @@ class Drive {
 
 			The translational vector is independent of the rotational velocity
 			(i.e. turn())
+
+			NOTE: Motors and logic are unaffected until update() is called.
 		*/
 		void move(Vector3<float> velocity);
 
@@ -73,6 +75,8 @@ class Drive {
 
 			The rotational velocity is independent of the translation vector
 			(i.e. move())
+
+			NOTE: Motors and logic are unaffected until update() is called.
 		*/
 		void turn(float speed);
 
@@ -88,6 +92,14 @@ class Drive {
 		*/
 		void update();
 
+		/*
+			Stops all motors immediately. Does not require a subsequent call to
+			update(), unlike move() and turn().
+
+			Throws I2CException.
+		*/
+		void stop();
+
 	private:
 		Accelerometer *mAccelerometer;
 
@@ -96,10 +108,10 @@ class Drive {
 			
 			   (front)
 
-			   0     1
-			     \ /
-			     / \
-			   3     2
+			   0     1      Y
+			     \ /        ^
+			     / \        |
+			   3     2      |--> X
 
 			    (rear)
 

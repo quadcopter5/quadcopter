@@ -99,6 +99,12 @@ int main(int argc, char **argv) {
 			usleep(20000); // 20,000 us = 0.02 ms = accelerometer update rate
 		}
 
+		std::cout << "Stopping motors" << std::endl;
+		drive.move(Vector3<float>(0.0f, 0.0f, 0.0));
+		drive.stop();
+
+		usleep(100000); // Make sure motors have time to respond
+
 	} catch (Exception &e) {
 		std::cout << "EXCEPTION: " << e.getDescription() << std::endl;
 		quit(-1);
