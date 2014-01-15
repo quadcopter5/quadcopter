@@ -74,7 +74,7 @@ $(LIBDIR)/libcommon_d.a: \
 		$(foreach name,$(COMMON_NAMES),$(OBJDIR)/common/$(name)_d.o)
 	ar rcs $@ $^
 
-define COMMON_TEMPLATE =
+define COMMON_TEMPLATE
 $$(OBJDIR)/common/$(1).o: $$(COMMON)/$$(SRCDIR)/$(1).cpp
 	$$(CC) $$(CFLAGS) $$(RELEASEFLAGS) -c $$^ -o $$@
 $$(OBJDIR)/common/$(1)_d.o: $$(COMMON)/$$(SRCDIR)/$(1).cpp
@@ -97,7 +97,7 @@ $(LIBDIR)/libremote_d.a: \
 		$(foreach name,$(REMOTE_NAMES),$(OBJDIR)/$(name)_d.o)
 	ar rcs $@ $^
 
-define REMOTE_TEMPLATE =
+define REMOTE_TEMPLATE
 $$(OBJDIR)/$(1).o: $$(SRCDIR)/$(1).cpp
 	$$(CC) $$(CFLAGS) $$(RELEASEFLAGS) -c $$^ -o $$@
 $$(OBJDIR)/$(1)_d.o: $$(SRCDIR)/$(1).cpp
