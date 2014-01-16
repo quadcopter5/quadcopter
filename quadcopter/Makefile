@@ -89,8 +89,8 @@ $(foreach name,$(COMMON_NAMES),$(eval $(call COMMON_TEMPLATE,$(name))))
 # Quadcopter-specific objects
 #
 
-QUAD_NAMES = geometry gpio radiouart queuebuffer i2c pwm accelerometer motor \
-		drive
+QUAD_NAMES = geometry gpio radiouart queuebuffer i2c pwm accelerometer \
+		gyroscope motor drive
 
 $(LIBDIR)/libquadcopter.a: \
 		$(foreach name,$(QUAD_NAMES),$(OBJDIR)/$(name).o)
@@ -100,10 +100,10 @@ $(LIBDIR)/libquadcopter_d.a: \
 	ar rcs $@ $^
 
 define QUAD_TEMPLATE
-$$(OBJDIR)/$(1).o: $$(SRCDIR)/$(1).cpp
-	$$(CC) $$(CFLAGS) $$(RELEASEFLAGS) -c $$^ -o $$@
-$$(OBJDIR)/$(1)_d.o: $$(SRCDIR)/$(1).cpp
-	$$(CC) $$(CFLAGS) $$(DEBUGFLAGS) -c $$^ -o $$@
+$$(OBJDIR)/$(1).o: $$(SRCDIR)/$(1).cpp $$(INCLUDEDIR)/$(1).h
+	$$(CC) $$(CFLAGS) $$(RELEASEFLAGS) -c $$(SRCDIR)/$(1).cpp -o $$@
+$$(OBJDIR)/$(1)_d.o: $$(SRCDIR)/$(1).cpp $$(INCLUDEDIR)/$(1).h
+	$$(CC) $$(CFLAGS) $$(DEBUGFLAGS) -c $$(SRCDIR)/$(1).cpp -o $$@
 endef
 
 $(foreach name,$(QUAD_NAMES),$(eval $(call QUAD_TEMPLATE,$(name))))

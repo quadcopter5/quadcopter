@@ -24,6 +24,11 @@ struct Vector2 {
 
 	Vector2(T nx, T ny) : x(nx), y(ny)
 			{ }
+
+	void operator+=(Vector2<T> other) {
+		x += other.x;
+		y += other.y;
+	}
 };
 
 template<typename T>
@@ -34,6 +39,12 @@ struct Vector3 {
 
 	Vector3(T nx, T ny, T nz) : x(nx), y(ny), z(nz)
 			{ }
+
+	void operator+=(Vector3<T> other) {
+		x += other.x;
+		y += other.y;
+		z += other.z;
+	}
 };
 
 /**

@@ -11,6 +11,8 @@
 #ifndef QUEUEBUFFER_H
 #define QUEUEBUFFER_H
 
+#include <stddef.h>
+
 #define QB_BUFSIZE 4096
 typedef struct _QueueBufferNode {
 	char buffer[QB_BUFSIZE];
