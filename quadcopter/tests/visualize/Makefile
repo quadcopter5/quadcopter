@@ -1,9 +1,8 @@
 CC = g++
-CFLAGS = -I../../include -I../../../common/include \
-		-I../../../quadcopter/include
+CFLAGS = -I../../include -I../../../common/include
 DEBUGFLAGS = $(CFLAGS) -g -D_DEBUG
 RELEASEFLAGS = $(CFLAGS)
-LDFLAGS = -L../../lib -lSDL2 -lGL -lGLU -lcommon_d -lremote_d
+LDFLAGS = -L../../lib -lcommon_d -lquadcopter_d
 
 .PHONY: all release debug clean
 
