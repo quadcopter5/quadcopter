@@ -15,10 +15,20 @@
 #ifndef DRIVE_H
 #define DRIVE_H
 
+#include <string>
+
+#include "exception.h"
 #include "pwm.h"
 #include "motor.h"
 #include "accelerometer.h"
+#include "gyroscope.h"
 #include "geometry.h"
+
+class CalibrationException : public Exception {
+	public:
+		CalibrationException(const std::string &msg, const std::string &file,
+				int line) : Exception(msg, file, line) { }
+};
 
 class Drive {
 	public:
@@ -35,10 +45,16 @@ class Drive {
 			smoothing controls how many accelerometer frames are averaged
 			(1 frame corresponds to a call to update())
 
-			Throws PWMException and I2CException.
+			The constructor looks for a file named "calibration.ini". If it
+			is found, the values contained are used as calibration for the
+			sensors. Otherwise, no calibration is used (until a call to
+			calibrate()).
+
+			Throws PWMException, I2CException, and CalibrationException.
 		*/
 		Drive(PWM *pwm,
 				Accelerometer *accel,
+				Gyroscope *gyro,
 				int frontleft,
 				int frontright,
 				int rearright,
@@ -100,8 +116,29 @@ class Drive {
 		*/
 		void stop();
 
+		/*
+			Calibrate sensors. Reads sensors for the given number of
+			milliseconds at 100Hz. Then, averages the readings and uses these
+			values as the "zero position" of the sensors in future
+			calculations.
+
+			CAUTION: This function should only be called when the sensors are
+			completely still (0 linear and rotational motion) and perfectly
+			in the upright position.
+
+			Upon completion, the calibrated values are saved to file
+			"calibration.ini" to eliminate the need to recalibrate every time.
+
+			Throws I2CException if sensors cannot be read.
+			       CalibrationException if the calibration could not be saved
+				   to file. This is probably not fatal, but the calibration
+				   will not be remembered the next time the program runs.
+		*/
+		void calibrate(unsigned int millis);
+
 	private:
 		Accelerometer *mAccelerometer;
+		Gyroscope     *mGyroscope;
 
 		/**
 			Layout of motors by index:
@@ -128,19 +165,60 @@ class Drive {
 		Vector3<float> *mAccelValue;
 		int mAccelValueCurrent;
 
-		// The last inputted values
+		// Same idea as mAccelValue, but for the gyroscope.
+		Vector3<float> *mGyroValue;
+		int mGyroValueCurrent;
+
+		// The last inputted target motion values
 		float          mRotate;
 		Vector3<float> mTranslate;
 
+		// Offset values based on sensor calibration
+		// These values should be SUBTRACTED from sensor readings to obtain
+		// the "zero" value.
+		Vector3<float> mAccelOffset;
+		Vector3<float> mGyroOffset;
+
 		/**
-			Update the mAccelValue array
+			Update the sensor value buffers
 		*/
-		void updateAccelerometer();
+		void updateSensors();
 
 		/**
 			Returns the average of the values in mAccelValue
 		*/
 		Vector3<float> averageAccelerometer();
+
+		/**
+			Returns the average of the values in mGyroValue
+		*/
+		Vector3<float> averageAccelerometer();
+
+		/**
+			Save the values currently used as calibration to disk.
+
+			File format:
+				AccelX=###.###
+				AccelY=###.###
+				AccelZ=###.###
+				GyroX=###.###
+				GyroY=###.###
+				GyroZ=###.###
+
+			Lines may appear in any order, and numbers must be float
+			format.
+
+			Throws CalibrationException if the file could not be written.
+		*/
+		void saveCalibration(const std::string &filename);
+
+		/**
+			Loads the values from the calibration file into the calibration
+			member variables.
+
+			Throws CalibrationException if the file does not exist.
+		*/
+		void loadCalibration(const std::string &filename);
 };
 
 #endif

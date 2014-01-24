@@ -29,6 +29,11 @@ struct Vector2 {
 		x += other.x;
 		y += other.y;
 	}
+
+	void operator-=(Vector2<T> other) {
+		x -= other.x;
+		y -= other.y;
+	}
 };
 
 template<typename T>
@@ -44,6 +49,12 @@ struct Vector3 {
 		x += other.x;
 		y += other.y;
 		z += other.z;
+	}
+
+	void operator-=(Vector3<T> other) {
+		x -= other.x;
+		y -= other.y;
+		z -= other.z;
 	}
 };
 

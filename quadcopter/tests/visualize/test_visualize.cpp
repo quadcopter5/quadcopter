@@ -18,13 +18,17 @@
 #include "radioconnection.h"
 #include "packetdiagnostic.h"
 #include "accelerometer.h"
+#include "gyroscope.h"
 #include "geometry.h"
+#include "drive.h"
 
 int main(int argc, char **argv) {
 	try {
 		I2C i2c("/dev/i2c-1");
 		Accelerometer accel(&i2c, 0x53, Accelerometer::RANGE_2G,
 				Accelerometer::SRATE_100HZ);
+		Gyroscope gyro(&i2c, 0x69, Gyroscope::RANGE_250DPS,
+				Gyroscope::SRATE_100HZ);
 
 		RadioUART radio(57600, Radio::PARITY_EVEN);
 		RadioConnection connection(&radio);
@@ -33,6 +37,7 @@ int main(int argc, char **argv) {
 		connection.connect();
 		std::cout << "Connected!" << std::endl;
 
+		Drive drive(
 		Vector3<float> values;
 
 		std::string input;
