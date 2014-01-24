@@ -36,14 +36,12 @@ struct DataPoint {
 int main(int argc, char **argv) {
 	// Initialize radio
 	try {
-		/*
 		RadioLinux radio("/dev/ttyUSB0", 57600, Radio::PARITY_EVEN);
 		RadioConnection connection(&radio);
 
 		std::cout << "Waiting for connection..." << std::endl;
 		connection.connect();
 		std::cout << "Connected!" << std::endl;
-		*/
 
 		if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 			std::cout << "Could not initialize SDL" << std::endl;
@@ -142,6 +140,7 @@ int main(int argc, char **argv) {
 				}
 			}
 
+			/*
 			// Temporary false data to test interface
 			DataPoint p;
 			p.timestamp = SDL_GetTicks();
@@ -149,9 +148,9 @@ int main(int argc, char **argv) {
 			p.accel.y = 90.0 * cos((float)p.timestamp / 2000.0 * PI);
 			p.accel.z = 90.0 * sin((float)p.timestamp / 200.0 * PI);
 			angles.push_back(p);
+			*/
 
 			// Poll for radio packets
-			/*
 			while (pkt = connection.receive()) {
 				switch (pkt->getHeader()) {
 					case PKT_DIAGNOSTIC: {
@@ -167,7 +166,6 @@ int main(int argc, char **argv) {
 				}
 			}
 			pkt = 0;
-			*/
 
 			// Rendering
 
