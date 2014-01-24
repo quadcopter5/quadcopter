@@ -1,8 +1,8 @@
 /*
-	test_visualize.cpp
+	test_visualizedrive.cpp
 
-	Test that sends the perceived orientation over the radio to be visualized
-	by the remote (using remote test_visualize).	
+	Test that sends the perceived orientation (according to Drive class) over
+	the radio to be visualized by the remote (using remote test_visualize).	
 */
 
 #include <string>
@@ -17,14 +17,16 @@
 #include "radiouart.h"
 #include "radioconnection.h"
 #include "packetdiagnostic.h"
+#include "geometry.h"
 #include "accelerometer.h"
 #include "gyroscope.h"
-#include "geometry.h"
+#include "pwm.h"
 #include "drive.h"
 
 int main(int argc, char **argv) {
 	try {
 		I2C i2c("/dev/i2c-1");
+		PWM pwm(&i2c, 0x40);
 		Accelerometer accel(&i2c, 0x53, Accelerometer::RANGE_2G,
 				Accelerometer::SRATE_100HZ);
 		Gyroscope gyro(&i2c, 0x69, Gyroscope::RANGE_250DPS,
@@ -37,7 +39,7 @@ int main(int argc, char **argv) {
 		connection.connect();
 		std::cout << "Connected!" << std::endl;
 
-		Vector3<float> values;
+		Drive drive(&pwm, &accel, &gyro, 15, 15, 15, 15);
 
 		std::string input;
 		bool running = true;
@@ -49,7 +51,7 @@ int main(int argc, char **argv) {
 			float y_angle = asin(values.x / magnitude(xz)) * 180.0 / PI;
 			float x_angle = asin(values.y / magnitude(yz)) * 180.0 / PI;
 
-			printf("Sending X : %+08f | Y : %+08f | Z : %+08f\n",
+			printf("Sending Roll : %+08f | Pitch : %+08f | Yaw : %+08f\n",
 					values.x, values.y, values.z);
 			PacketDiagnostic pkt(0, x_angle, y_angle, 0.0f);
 			connection.send(&pkt);

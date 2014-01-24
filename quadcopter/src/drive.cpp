@@ -1,5 +1,5 @@
 /*
-	drive.h
+	drive.cpp
 
 	Drive class - controls the motors of a quadcopter for stabilization and
 		motion. Supports translational and rotational (yaw) motion.
@@ -14,6 +14,7 @@
 #include <string.h>
 #include <string>
 #include <fstream>
+#include <limits>
 
 #include "exception.h"
 #include "pwm.h"
@@ -58,9 +59,13 @@ Drive::Drive(PWM *pwm, Accelerometer *accel, Gyroscope *gyro, int frontleft,
 	// Wait for motors to prime
 	usleep(3000000);
 
+	mRoll = 0.0f;
+	mPitch = 0.0f;
+	mYaw = 0.0f;
+
 	// Pre-populate mAccelValue and mGyroValue arrays
-	Vector3<float> aval; = mAccelerometer->read();
-	Vector3<float> gval; = mGyroscope->read();
+	Vector3<float> aval;
+	Vector3<float> gval;
 	for (int i = 0; i < mSmoothing; ++i) {
 		aval = mAccelerometer->read();
 		gval = mGyroscope->read();
@@ -70,6 +75,8 @@ Drive::Drive(PWM *pwm, Accelerometer *accel, Gyroscope *gyro, int frontleft,
 	}
 	mAccelValueCurrent = 0;
 	mGyroValueCurrent = 0;
+
+	calculateOrientation();
 
 	for (int i = 0; i < 4; ++i)
 		mMotors[i]->setSpeed(0.0f);
@@ -96,8 +103,7 @@ void Drive::turn(float speed) {
 
 void Drive::update() {
 	updateSensors();
-	Vector3<float> accel = averageAccelerometer();
-	Vector3<float> gyro = averageGyroscope();
+	calculateOrientation();
 
 	/*
 	Vector2<float> xz(accel.x, accel.z);
@@ -143,6 +149,18 @@ void Drive::stop() {
 		mMotors[i]->setSpeed(0.0f);
 }
 
+float Drive::getRoll() {
+	return mRoll;
+}
+
+float Drive::getPitch() {
+	return mPitch;
+}
+
+float Drive::getYaw() {
+	return mYaw;
+}
+
 void Drive::calibrate(unsigned int millis) {
 	Vector3<float> accel_total;
 	Vector3<float> gyro_total;
@@ -186,6 +204,15 @@ void Drive::updateSensors() {
 	mGyroValue[mGyroValueCurrent] = mGyroscope->read();
 }
 
+void Drive::calculateOrientation() {
+	Vector3<float> accel = averageAccelerometer();
+	Vector3<float> gyro = averageGyroscope();
+
+	mRoll = accel.x;
+	mPitch = accel.y;
+	mYaw = accel.z;
+}
+
 Vector3<float> Drive::averageAccelerometer() {
 	Vector3<float> avg;
 	for (int i = 0; i < mSmoothing; ++i) {
@@ -214,7 +241,7 @@ Vector3<float> Drive::averageGyroscope() {
 	return avg;
 }
 
-void Drive::loadConfiguration(const std::string &filename) {
+void Drive::loadCalibration(const std::string &filename) {
 	std::ifstream file(filename.c_str(), std::ios_base::in);
 	if (file.fail())
 		THROW_EXCEPT(CalibrationException,
@@ -239,7 +266,7 @@ void Drive::loadConfiguration(const std::string &filename) {
 	}
 }
 
-void Drive::saveConfiguration(const std::string &filename) {
+void Drive::saveCalibration(const std::string &filename) {
 	std::ofstream file(filename.c_str(),
 			std::ios_base::out | std::ios_base::trunc);
 	if (file.fail())

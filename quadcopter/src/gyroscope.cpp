@@ -73,8 +73,8 @@ void Gyroscope::setSampleRate(SampleRate rate) {
 	setSleepAndRate();
 }
 
-Vector3<int> Gyroscope::read() {
-	Vector3<int> vector;
+Vector3<float> Gyroscope::read() {
+	Vector3<float> vector;
 	int16_t values[3];
 	char buffer = OUT_X_L | AUTO_INCR;
 
@@ -82,9 +82,21 @@ Vector3<int> Gyroscope::read() {
 	mI2C->enqueueRead(mSlaveAddr, values, 6);
 	mI2C->sendTransaction();
 
-	vector.x = (int)values[0];
-	vector.y = (int)values[1];
-	vector.z = (int)values[2];
+	float factor;
+	switch (mRange) {
+		case RANGE_250DPS:
+			factor = 0.00875f;
+			break;
+		case RANGE_500DPS:
+			factor = 0.0175f;
+			break;
+		case RANGE_2000DPS:
+			factor = 0.07f;
+			break;
+	}
+	vector.x = factor * (int)values[0];
+	vector.y = factor * (int)values[1];
+	vector.z = factor * (int)values[2];
 
 	return vector;
 }

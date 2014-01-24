@@ -114,7 +114,7 @@ class Gyroscope {
 
 			Throws I2CException if I2C communication fails.
 		*/
-		Vector3<int> read();
+		Vector3<float> read();
 
 	private:
 		I2C     *mI2C;

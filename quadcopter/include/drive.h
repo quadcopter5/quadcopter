@@ -117,6 +117,24 @@ class Drive {
 		void stop();
 
 		/*
+			Returns the perceived roll angle, as of the last call to update().
+			0 = upright
+		*/
+		float getRoll();
+
+		/*
+			Returns the perceived pitch angle, as of the last call to update().
+			0 = upright
+		*/
+		float getPitch();
+
+		/*
+			Returns the perceived yaw angle, as of the last call to update().
+			0 = initial angle
+		*/
+		float getYaw();
+
+		/*
 			Calibrate sensors. Reads sensors for the given number of
 			milliseconds at 100Hz. Then, averages the readings and uses these
 			values as the "zero position" of the sensors in future
@@ -156,6 +174,15 @@ class Drive {
 		*/
 		Motor *mMotors[4];
 
+		// The last inputted target motion values
+		float          mRotate;
+		Vector3<float> mTranslate;
+
+		// Current perceived orientation
+		float mRoll,
+		      mPitch,
+		      mYaw;
+
 		// How many frames of accelerometer values to average
 		int mSmoothing;
 
@@ -169,10 +196,6 @@ class Drive {
 		Vector3<float> *mGyroValue;
 		int mGyroValueCurrent;
 
-		// The last inputted target motion values
-		float          mRotate;
-		Vector3<float> mTranslate;
-
 		// Offset values based on sensor calibration
 		// These values should be SUBTRACTED from sensor readings to obtain
 		// the "zero" value.
@@ -185,6 +208,14 @@ class Drive {
 		void updateSensors();
 
 		/**
+			Calculate orientation based on stored sensor values (i.e. call
+			updateSensors() before using this)
+
+			Stores results in mRoll, mPitch, and mYaw.
+		*/
+		void calculateOrientation();
+
+		/**
 			Returns the average of the values in mAccelValue
 		*/
 		Vector3<float> averageAccelerometer();
@@ -192,7 +223,7 @@ class Drive {
 		/**
 			Returns the average of the values in mGyroValue
 		*/
-		Vector3<float> averageAccelerometer();
+		Vector3<float> averageGyroscope();
 
 		/**
 			Save the values currently used as calibration to disk.
