@@ -4,12 +4,15 @@ DEBUGFLAGS = $(CFLAGS) -g -D_DEBUG
 RELEASEFLAGS = $(CFLAGS)
 LDFLAGS = -L../../lib -lcommon_d -lquadcopter_d
 
-.PHONY: all release debug clean
+.PHONY: all libs release debug clean
 
-all: debug
+all: libs debug
 
 release: visualize.x
 debug: visualize_d.x
+
+libs:
+	make -C ../..
 
 visualize.x: test_visualize.cpp
 	$(CC) $(DEBUGFLAGS) test_visualize.cpp -o $@

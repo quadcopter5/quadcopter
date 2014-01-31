@@ -208,9 +208,10 @@ void Drive::calculateOrientation() {
 	Vector3<float> accel = averageAccelerometer();
 	Vector3<float> gyro = averageGyroscope();
 
-	mRoll = accel.x;
-	mPitch = accel.y;
-	mYaw = accel.z;
+	mRoll = atan2(-accel.z, accel.x);
+	mPitch = atan2(-accel.z, accel.y);
+
+	mYaw = 0.0f;
 }
 
 Vector3<float> Drive::averageAccelerometer() {

@@ -14,6 +14,8 @@
 #include <SDL2/SDL.h>
 #include <GL/gl.h>
 #include <GL/glu.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/lexical_cast.hpp>
 
 #include "radio.h"
 #include "radiolinux.h"
@@ -21,6 +23,8 @@
 #include "packet.h"
 #include "packetdiagnostic.h"
 #include "geometry.h"
+#include "graphics/font.h"
+#include "graphics/image.h"
 
 #define PI          3.1415926535
 
@@ -33,20 +37,32 @@ struct DataPoint {
 	Vector3<float> accel;
 };
 
+enum TextAlign {
+	TEXT_LEFT   = 0,
+	TEXT_CENTER = 1,
+	TEXT_RIGHT  = 2
+};
+
+void drawText(const std::string &text, boost::shared_ptr<Font> fnt, int size,
+		int x, int y, TextAlign align = TEXT_LEFT, double red = 1.0,
+		double green = 1.0, double blue = 1.0, double alpha = 1.0);
+
 int main(int argc, char **argv) {
 	// Initialize radio
 	try {
 		RadioLinux radio("/dev/ttyUSB0", 57600, Radio::PARITY_EVEN);
 		RadioConnection connection(&radio);
 
-		std::cout << "Waiting for connection..." << std::endl;
-		connection.connect();
-		std::cout << "Connected!" << std::endl;
+//		std::cout << "Waiting for connection..." << std::endl;
+//		connection.connect();
+//		std::cout << "Connected!" << std::endl;
 
 		if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 			std::cout << "Could not initialize SDL" << std::endl;
 			return -1;
 		}
+
+		Font::initializeSystem();
 
 		// Set up OpenGL attributes
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -79,17 +95,24 @@ int main(int argc, char **argv) {
 //		SDL_SetRelativeMouseMode(SDL_TRUE);
 
 		// Set GL rendering options
-		glOrtho(0, 800, 600, 0, -1.0, 1.0);
+		glOrtho(0, 800, 600, 0, -100.0, 100.0);
 //		gluPerspective(70.0, 800.0 / 600.0, 1.0, 1000.0);
 
+		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+		// Load resources
+		boost::shared_ptr<Font> font(new Font("fonts/wqy-microhei.ttc"));
+		font->loadSize(10);
+
 		// Main loop
 
 		double cursor_x = 0.0, cursor_y = 0.0;
-		double time_scale = 10.0;
+		double time_scale = 10.0,
+		       value_scale = 90.0;
+		int    rightside = 780;
 
 		Uint32 frame_start;
 		std::list<DataPoint> angles;
@@ -124,6 +147,12 @@ int main(int argc, char **argv) {
 								break;
 							case SDLK_RIGHT:
 								time_scale *= 1.05;
+								break;
+							case SDLK_DOWN:
+								value_scale /= 1.05;
+								break;
+							case SDLK_UP:
+								value_scale *= 1.05;
 								break;
 							default:
 								break;
@@ -171,14 +200,16 @@ int main(int argc, char **argv) {
 
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			// Cursor
-			glBegin(GL_TRIANGLES);
-				glColor4f(1.0f, 0.5f, 0.0f, 1.0f);
-				glVertex3d(cursor_x,        cursor_y,        0.0);
-				glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
-				glVertex3d(cursor_x + 10.0, cursor_y,        0.0);
-				glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
-				glVertex3d(cursor_x,        cursor_y + 10.0, 0.0);
+			// Background
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glBegin(GL_QUADS);
+				for (int c = 0; c <= 2; ++c) {
+					glColor4d(colors[c].x, colors[c].y, colors[c].z, 0.05);
+					glVertex3d(0.5,   200.5 * c,       -10.0);
+					glVertex3d(0.5,   200.5 * (c + 1), -10.0);
+					glVertex3d(rightside + 0.5, 200.5 * (c + 1), -10.0);
+					glVertex3d(rightside + 0.5, 200.5 * c,       -10.0);
+				}
 			glEnd();
 
 			// Graphs
@@ -187,11 +218,11 @@ int main(int argc, char **argv) {
 				for (int c = 0; c <= 2; ++c) {
 					glColor4d(colors[c].x, colors[c].y, colors[c].z, 0.5);
 					glVertex3d(0.5,   100.5 + 200 * c, 0.0);
-					glVertex3d(780.5, 100.5 + 200 * c, 0.0);
+					glVertex3d(rightside + 0.5, 100.5 + 200 * c, 0.0);
 				}
 
 				// Scale
-				for (double place = 780.5; place > 0.0;
+				for (double place = rightside + 0.5; place > 0.0;
 						place -= 1000.0 / time_scale) {
 					for (int c = 0; c <= 2; ++c) {
 						glColor4d(colors[c].x, colors[c].y, colors[c].z, 0.5);
@@ -201,9 +232,39 @@ int main(int argc, char **argv) {
 				}
 			glEnd();
 
-			// Scale
-			glBegin(GL_LINES);
-			glEnd();
+			// Horizontal Scale text
+			for (int c = 0; c <= 2; ++c) {
+				drawText("0s", font, 8, rightside + 5, 105 + c * 200,
+						TEXT_LEFT, colors[c].x, colors[c].y, colors[c].z);
+			}
+
+			int num = 1;
+			for (double place = rightside + 0.5 - 1000.0 / time_scale;
+					place > 0.0;
+					place -= 1000.0 / time_scale) {
+				for (int c = 0; c <= 2; ++c) {
+					drawText(boost::lexical_cast<std::string>(num),
+							font, 8,
+							(int)place, 117 + c * 200,
+							TEXT_CENTER,
+							colors[c].x, colors[c].y, colors[c].z, 0.3);
+				}
+				++num;
+			}
+			
+			// Vertical Scale text
+			std::string text = boost::lexical_cast<std::string>(
+					(int)value_scale)
+					+ "." + boost::lexical_cast<std::string>(
+					(int)(value_scale * 100.0) % 100);
+			for (int c = 0; c <= 2; ++c) {
+				drawText(text,
+						font, 8, 798, 12 + 200 * c, TEXT_RIGHT,
+						colors[c].x, colors[c].y, colors[c].z, 0.5);
+				drawText("-" + text,
+						font, 8, 798, 198 + 200 * c, TEXT_RIGHT,
+						colors[c].x, colors[c].y, colors[c].z, 0.5);
+			}
 
 			// Data curves
 
@@ -211,18 +272,20 @@ int main(int argc, char **argv) {
 			int i, numpoints = 0;
 			std::list<DataPoint>::reverse_iterator iter;
 
+			glBindTexture(GL_TEXTURE_2D, 0);
+
 			// X
 			glBegin(GL_LINE_STRIP);
 				double timepos = 800;
 				for (iter = angles.rbegin();
 						iter != angles.rend() && timepos > 0;
 						++iter) {
-					timepos = 780 - (currentticks - iter->timestamp)
+					timepos = rightside - (currentticks - iter->timestamp)
 					             / time_scale + 0.5;
 					glColor4d(colors[0].x, colors[0].y, colors[0].z, 1.0);
 					glVertex3d(
 						timepos,
-						(iter->accel.x / 90.0) * 100.0 + 100.5, 0.0);
+						(iter->accel.x / value_scale) * 100.0 + 100.5, 5.0);
 					++numpoints;
 				}
 			glEnd();
@@ -235,9 +298,9 @@ int main(int argc, char **argv) {
 						iter != angles.rend() && i < numpoints;
 						++iter, ++i)
 					glVertex3d(
-						780 - (currentticks - iter->timestamp)
+						rightside - (currentticks - iter->timestamp)
 						      / time_scale + 0.5,
-						(iter->accel.y / 90.0) * 100.0 + 300.5, 0.0);
+						(iter->accel.y / value_scale) * 100.0 + 300.5, 5.0);
 			glEnd();
 
 			// Z
@@ -248,9 +311,19 @@ int main(int argc, char **argv) {
 						iter != angles.rend() && i < numpoints;
 						++iter, ++i)
 					glVertex3d(
-						780 - (currentticks - iter->timestamp)
+						rightside - (currentticks - iter->timestamp)
 						      / time_scale + 0.5,
-						(iter->accel.z / 90.0) * 100.0 + 500.5, 0.0);
+						(iter->accel.z / value_scale) * 100.0 + 500.5, 5.0);
+			glEnd();
+
+			// Cursor
+			glBegin(GL_TRIANGLES);
+				glColor4f(1.0f, 0.5f, 0.0f, 1.0f);
+				glVertex3d(cursor_x,        cursor_y,        50.0);
+				glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
+				glVertex3d(cursor_x + 10.0, cursor_y,        50.0);
+				glColor4f(1.0f, 0.0f, 0.0f, 1.0f);
+				glVertex3d(cursor_x,        cursor_y + 10.0, 50.0);
 			glEnd();
 
 			SDL_GL_SwapWindow(window);
@@ -268,11 +341,14 @@ int main(int argc, char **argv) {
 		std::cout << "Failed to initialize radio: "
 		          << e.getMessage() << std::endl;
 		return -1;
+	} catch (FontException &e) {
+		std::cout << "Failed to load font: " << e.getMessage() << std::endl;
+		return -1;
 	} catch (Exception &e) {
 		std::cout << "Exception: " << e.getDescription() << std::endl;
 		return -1;
 	} catch (...) {
-		std::cout << "Unrecognized exception" << std::endl;
+		std::cout << "Unrecognized exception!" << std::endl;
 		return -1;
 	}
 
@@ -282,5 +358,49 @@ int main(int argc, char **argv) {
 void quit(int code) {
 	SDL_Quit();
 	exit(code);
+}
+
+void drawText(const std::string &text, boost::shared_ptr<Font> fnt, int size,
+		int x, int y, TextAlign align, double red, double green, double blue,
+		double alpha) {
+	int px, py;
+	Font::Glyph glyph;
+	std::string::const_iterator iter;
+
+	switch (align) {
+		case TEXT_LEFT:
+		default:
+			px = x;
+			py = y;
+			break;
+
+		case TEXT_CENTER:
+		case TEXT_RIGHT: {
+			px = x;
+			py = y;
+			
+			int width = 0;
+			for (iter = text.begin(); iter != text.end(); ++iter) {
+				width += fnt->getGlyph(size, *iter).advancex;
+			}
+
+			if (align == TEXT_CENTER)
+				px -= width / 2;
+			else
+				px -= width;
+
+		}	break;
+	}
+
+	for (iter = text.begin(); iter != text.end(); ++iter) {
+		glyph = fnt->getGlyph(size, *iter);
+		if (glyph.image) {
+			glyph.image->bindTexture();
+			glyph.image->renderColor(px + glyph.bearingx, py + glyph.bearingy,
+					0, 0, 0, 0, alpha, red, green, blue);
+		}
+		px += glyph.advancex;
+		py += glyph.advancey;
+	}
 }
 

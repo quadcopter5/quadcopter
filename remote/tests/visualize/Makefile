@@ -1,24 +1,63 @@
 CC = g++
-CFLAGS = -I../../include -I../../../common/include \
+CFLAGS = -I. -I../../include -I../../../common/include \
 		-I../../../quadcopter/include
 DEBUGFLAGS = $(CFLAGS) -g -D_DEBUG
 RELEASEFLAGS = $(CFLAGS)
-LDFLAGS = -L../../lib -lSDL2 -lGL -lGLU -lcommon_d -lremote_d
+LDFLAGS_DEBUG = -L../../lib -lSDL2 -lGL -lGLU -lfreetype -lcommon_d \
+		-lremote_d
+LDFLAGS_RELEASE = -L../../lib -lSDL2 -lGL -lGLU -lfreetype -lcommon -lremote
 
-.PHONY: all release debug clean
+.PHONY: all dirs release debug clean
 
-all: debug
+all: dirs debug
 
 release: visualize.x
 debug: visualize_d.x
 
-visualize.x: test_visualize.cpp
-	$(CC) $(DEBUGFLAGS) test_visualize.cpp -o $@
+dirs: graphics/obj lib/
+graphics/obj/:
+	mkdir -p graphics/obj
+lib/:
+	mkdir -p lib
 
-visualize_d.x: test_visualize.cpp
-	$(CC) $(RELEASEFLAGS) test_visualize.cpp $(LDFLAGS) -o $@
+visualize.x: test_visualize.cpp lib/graphics.a
+	$(CC) $(DEBUGFLAGS) test_visualize.cpp lib/graphics.a \
+		$(LDFLAGS_RELEASE) -o $@
 
+visualize_d.x: test_visualize.cpp lib/graphics_d.a
+	$(CC) $(RELEASEFLAGS) test_visualize.cpp lib/graphics_d.a \
+		$(LDFLAGS_DEBUG) -o $@
+
+
+# Graphics
+
+lib/graphics.a: graphics/obj/font_d.o graphics/obj/image_d.o
+#		graphics/obj/loadimage_d.o
+	ar rcs $@ $^
+
+graphics/obj/font.o: graphics/font.cpp graphics/font.h
+	$(CC) -c $(RELEASEFLAGS) graphics/font.cpp -o $@
+
+graphics/obj/image.o: graphics/image.cpp graphics/image.h
+	$(CC) -c $(RELEASEFLAGS) graphics/image.cpp -o $@
+
+#graphics/obj/loadimage.o: graphics/loadimage.cpp graphics/loadimage.h
+#	$(CC) -c $(RELEASEFLAGS) graphics/loadimage.cpp -o $@
+
+
+lib/graphics_d.a: graphics/obj/font_d.o graphics/obj/image_d.o
+#		graphics/obj/loadimage_d.o
+	ar rcs $@ $^
+
+graphics/obj/font_d.o: graphics/font.cpp graphics/font.h
+	$(CC) -c $(DEBUGFLAGS) graphics/font.cpp -o $@
+
+graphics/obj/image_d.o: graphics/image.cpp graphics/image.h
+	$(CC) -c $(DEBUGFLAGS) graphics/image.cpp -o $@
+
+#graphics/obj/loadimage_d.o: graphics/loadimage.cpp graphics/loadimage.h
+#	$(CC) -c $(DEBUGFLAGS) graphics/loadimage.cpp -o $@
 
 clean:
-	rm *.x
+	rm -rf *.x graphics/obj
 
