@@ -22,7 +22,7 @@ int main(int argc, char **argv) {
 
 		int numsamples = 5;
 		int i = 1;
-		Vector3<int> values;
+		Vector3<float> values;
 
 		std::string input;
 		bool running = true;

@@ -1,8 +1,15 @@
 /*
-	test_visualizedrive.cpp
+	calibrate.cpp
 
-	Test that sends the perceived orientation (according to Drive class) over
-	the radio to be visualized by the remote (using remote test_visualize).	
+	Calibrates the sensors through Drive::calibrate(), saving the values to
+	calibration.ini.
+
+	NOTE: the calibration values are probably dependent on the range specified
+	for the sensors. Change the program to match the ranges that you are using
+	for each sensor.
+
+	Any program that wishes to use the outputted calibration should run with
+	this file alongside it.
 */
 
 #include <string>
@@ -32,29 +39,14 @@ int main(int argc, char **argv) {
 		Gyroscope gyro(&i2c, 0x69, Gyroscope::RANGE_250DPS,
 				Gyroscope::SRATE_100HZ);
 
-		RadioUART radio(57600, Radio::PARITY_EVEN);
-		RadioConnection connection(&radio);
-
-//		std::cout << "Waiting for connection..." << std::endl;
-//		connection.connect();
-//		std::cout << "Connected!" << std::endl;
-
-		Drive drive(&pwm, &accel, &gyro, 15, 15, 15, 15, 5);
-		drive.calibrate(1000);
-
-		std::string input;
-		bool running = true;
-		while (running) {
-			drive.update();
-
-			printf("Sending Roll : %+08f | Pitch : %+08f | Yaw : %+08f\n",
-					drive.getRoll(), drive.getPitch(), drive.getYaw());
-			PacketDiagnostic pkt(0,
-					drive.getRoll(), drive.getPitch(), drive.getYaw());
-			connection.send(&pkt);
-
-			usleep(10000); // 100 Hz
-		}
+		Drive drive(&pwm, &accel, &gyro, 15, 15, 15, 15);
+		
+		std::cout << "Calibrating for 2 seconds. Keep sensors still!"
+				<< std::endl
+				<< "  Accelerometer : Range=2G" << std::endl
+				<< "      Gyroscope : Range=250dps" << std::endl
+				<< "..." << std::endl;
+		drive.calibrate(2000);
 
 	} catch (I2CException &e) {
 		std::cerr << "I2C EXCEPTION: " << e.getDescription() << std::endl;

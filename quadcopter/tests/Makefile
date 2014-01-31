@@ -9,11 +9,13 @@ LDFLAGS = -L../lib -lquadcopter_d -lcommon_d
 
 BINDIR = bin
 
-TEST_NAMES = test_gpio test_radiouart test_queuebuffer test_i2c test_pwm \
-		test_accelerometer test_motor test_radioconnection test_endian \
-		test_radio_alternate test_orientation test_packets test_stabilize \
-		test_gyroscope
 
+#TEST_NAMES = test_gpio test_radiouart test_queuebuffer test_i2c test_pwm \
+#		test_accelerometer test_motor test_radioconnection test_endian \
+#		test_radio_alternate test_orientation test_packets test_stabilize \
+#		test_gyroscope calibrate
+TEST_NAMES = $(patsubst %.cpp,%,$(wildcard *.cpp))
+$(warning $(TEST_NAMES))
 
 .PHONY: all dirs tests source
 
