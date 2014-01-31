@@ -25,6 +25,9 @@ struct Vector2 {
 	Vector2(T nx, T ny) : x(nx), y(ny)
 			{ }
 
+	Vector2(Vector2 &other) : x(other.x), y(other.y)
+			{ }
+
 	void operator+=(Vector2<T> other) {
 		x += other.x;
 		y += other.y;
@@ -43,6 +46,9 @@ struct Vector3 {
 	Vector3() { }
 
 	Vector3(T nx, T ny, T nz) : x(nx), y(ny), z(nz)
+			{ }
+
+	Vector3(const Vector3 &other) : x(other.x), y(other.y), z(other.z)
 			{ }
 
 	void operator+=(Vector3<T> other) {

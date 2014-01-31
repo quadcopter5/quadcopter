@@ -2,20 +2,32 @@ CC = g++
 CFLAGS = -I../../include -I../../../common/include
 DEBUGFLAGS = $(CFLAGS) -g -D_DEBUG
 RELEASEFLAGS = $(CFLAGS)
-LDFLAGS = -L../../lib -lcommon_d -lquadcopter_d
+LDFLAGS_D = -L../../lib -lcommon_d -lquadcopter_d
+LDFLAGS_R = -L../../lib -lcommon -lquadcopter
 
 .PHONY: all release debug clean
 
 all: debug
 
-release: visualize.x
-debug: visualize_d.x
+release: visualize.x visualizedrive.x
+debug: visualize_d.x visualizedrive_d.x
 
-visualize.x: test_visualize.cpp
-	$(CC) $(DEBUGFLAGS) test_visualize.cpp -o $@
+visualize.x: test_visualize.cpp ../../lib/libcommon.a \
+		../../lib/libquadcopter.a
+	$(CC) $(RELEASEFLAGS) test_visualize.cpp $(LDFLAGS_R) -o $@
 
-visualize_d.x: test_visualize.cpp
-	$(CC) $(RELEASEFLAGS) test_visualize.cpp $(LDFLAGS) -o $@
+visualize_d.x: test_visualize.cpp ../../lib/libcommon_d.a \
+		../../lib/libquadcopter_d.a
+	$(CC) $(DEBUGFLAGS) test_visualize.cpp $(LDFLAGS_D) -o $@
+
+
+visualizedrive.x: test_visualizedrive.cpp ../../lib//libcommon.a \
+		../../lib/libquadcopter.a
+	$(CC) $(RELEASEFLAGS) test_visualizedrive.cpp $(LDFLAGS_R) -o $@
+
+visualizedrive_d.x: test_visualizedrive.cpp ../../lib/libcommon_d.a \
+		../../lib/libquadcopter_d.a
+	$(CC) $(DEBUGFLAGS) test_visualizedrive.cpp $(LDFLAGS_D) -o $@
 
 
 clean:

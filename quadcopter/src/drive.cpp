@@ -5,8 +5,7 @@
 		motion. Supports translational and rotational (yaw) motion.
 */
 
-// temporary for debugging
-#include <stdio.h>
+#include <iostream>
 
 #include <stdlib.h>
 #include <math.h>
@@ -54,7 +53,11 @@ Drive::Drive(PWM *pwm, Accelerometer *accel, Gyroscope *gyro, int frontleft,
 	mGyroOffset.x = 0.0f;
 	mGyroOffset.y = 0.0f;
 	mGyroOffset.z = 0.0f;
-	loadCalibration("calibration.ini");
+	try {
+		loadCalibration("calibration.ini");
+	} catch (CalibrationException &e) {
+		std::cout << "WARNING: Contimuimg without calibration" << std::endl;
+	}
 
 	// Wait for motors to prime
 	usleep(3000000);
@@ -180,7 +183,7 @@ void Drive::calibrate(unsigned int millis) {
 
 	mAccelOffset.x = accel_total.x / num_iterations;
 	mAccelOffset.y = accel_total.y / num_iterations;
-	mAccelOffset.z = accel_total.z / num_iterations;
+	mAccelOffset.z = accel_total.z / num_iterations + 1.0f;
 	mGyroOffset.x = gyro_total.x / num_iterations;
 	mGyroOffset.y = gyro_total.y / num_iterations;
 	mGyroOffset.z = gyro_total.z / num_iterations;
@@ -208,18 +211,15 @@ void Drive::calculateOrientation() {
 	Vector3<float> accel = averageAccelerometer();
 	Vector3<float> gyro = averageGyroscope();
 
-	mRoll = accel.x;
-	mPitch = accel.y;
-	mYaw = accel.z;
+	mRoll = accel.x - mAccelOffset.x;
+	mPitch = accel.y - mAccelOffset.y;
+	mYaw = accel.z - mAccelOffset.z;
 }
 
 Vector3<float> Drive::averageAccelerometer() {
-	Vector3<float> avg;
-	for (int i = 0; i < mSmoothing; ++i) {
-		avg.x += mAccelValue[i].x;
-		avg.y += mAccelValue[i].y;
-		avg.z += mAccelValue[i].z;
-	}
+	Vector3<float> avg(0.0f, 0.0f, 0.0f);
+	for (int i = 0; i < mSmoothing; ++i)
+		avg += mAccelValue[i];
 	avg.x /= mSmoothing;
 	avg.y /= mSmoothing;
 	avg.z /= mSmoothing;
@@ -228,12 +228,9 @@ Vector3<float> Drive::averageAccelerometer() {
 }
 
 Vector3<float> Drive::averageGyroscope() {
-	Vector3<float> avg;
-	for (int i = 0; i < mSmoothing; ++i) {
-		avg.x += mGyroValue[i].x;
-		avg.y += mGyroValue[i].y;
-		avg.z += mGyroValue[i].z;
-	}
+	Vector3<float> avg(0.0f, 0.0f, 0.0f);
+	for (int i = 0; i < mSmoothing; ++i)
+		avg += mGyroValue[i];
 	avg.x /= mSmoothing;
 	avg.y /= mSmoothing;
 	avg.z /= mSmoothing;

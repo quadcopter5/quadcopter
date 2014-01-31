@@ -50,7 +50,7 @@ class Drive {
 			sensors. Otherwise, no calibration is used (until a call to
 			calibrate()).
 
-			Throws PWMException, I2CException, and CalibrationException.
+			Throws PWMException and I2CException.
 		*/
 		Drive(PWM *pwm,
 				Accelerometer *accel,
@@ -149,10 +149,10 @@ class Drive {
 
 			Throws I2CException if sensors cannot be read.
 			       CalibrationException if the calibration could not be saved
-				   to file. This is probably not fatal, but the calibration
-				   will not be remembered the next time the program runs.
+			       to file. This is probably not fatal, but the calibration
+			       will not be remembered the next time the program runs.
 		*/
-		void calibrate(unsigned int millis);
+		void calibrate(unsigned int millis = 200);
 
 	private:
 		Accelerometer *mAccelerometer;
