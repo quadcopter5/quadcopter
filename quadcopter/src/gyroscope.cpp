@@ -94,8 +94,11 @@ Vector3<float> Gyroscope::read() {
 			factor = 0.07f;
 			break;
 	}
-	vector.x = factor * (int)values[0];
-	vector.y = factor * (int)values[1];
+
+	// Gyroscope axes are aligned differently than the accelerometer on GY80
+	// X and Y axes are swapped.
+	vector.y = factor * (int)values[0];
+	vector.x = factor * (int)values[1];
 	vector.z = factor * (int)values[2];
 
 	return vector;

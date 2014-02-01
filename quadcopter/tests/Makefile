@@ -15,7 +15,6 @@ BINDIR = bin
 #		test_radio_alternate test_orientation test_packets test_stabilize \
 #		test_gyroscope calibrate
 TEST_NAMES = $(patsubst %.cpp,%,$(wildcard *.cpp))
-$(warning $(TEST_NAMES))
 
 .PHONY: all dirs tests source
 

@@ -44,6 +44,11 @@ Drive::Drive(PWM *pwm, Accelerometer *accel, Gyroscope *gyro, int frontleft,
 		mGyroValue[i].z = 0.0f;
 	}
 
+	mRotate = 0.0f;
+	mTranslate.x = 0.0f;
+	mTranslate.y = 0.0f;
+	mTranslate.z = 0.0f;
+
 	mRoll  = 0.0f;
 	mPitch = 0.0f;
 	mYaw   = 0.0f;
@@ -52,9 +57,9 @@ Drive::Drive(PWM *pwm, Accelerometer *accel, Gyroscope *gyro, int frontleft,
 	mTargetPitch = 0.0f;
 	mTargetYaw   = 0.0f;
 
-	mPIDRoll  = new PIDController(mTargetRoll,  400.0f, 0.5f, 70.0f, 3);
-	mPIDPitch = new PIDController(mTargetPitch, 400.0f, 0.5f, 70.0f, 3);
-	mPIDYaw   = new PIDController(mTargetYaw,   400.0f, 0.5f, 70.0f, 3);
+	mPIDRoll  = new PIDController(mTargetRoll,  5.0f, 2.0f, 2.0f, 5);
+	mPIDPitch = new PIDController(mTargetPitch, 5.0f, 2.0f, 2.0f, 5);
+	mPIDYaw   = new PIDController(mTargetYaw,   5.0f, 2.0f, 2.0f, 5);
 
 	mMotors[0] = new Motor(pwm, frontleft, 1.27f, 1.6f);
 	mMotors[1] = new Motor(pwm, frontright, 1.27f, 1.6f);
@@ -91,7 +96,7 @@ Drive::Drive(PWM *pwm, Accelerometer *accel, Gyroscope *gyro, int frontleft,
 	mAccelValueCurrent = 0;
 	mGyroValueCurrent = 0;
 
-	calculateOrientation();
+	calculateOrientation(0.0f);
 
 	for (int i = 0; i < 4; ++i)
 		mMotors[i]->setSpeed(0.0f);
@@ -114,6 +119,9 @@ Drive::~Drive() {
 
 void Drive::move(Vector3<float> velocity) {
 	mTranslate = velocity;
+
+	mTargetRoll = -mTranslate.x;
+	mTargetPitch = mTranslate.y;
 }
 
 void Drive::turn(float speed) {
@@ -122,9 +130,20 @@ void Drive::turn(float speed) {
 
 void Drive::update() {
 	updateSensors();
-	calculateOrientation();
+
+	// Determine elapsed time since last update()
+	struct timeval currenttime;
+	gettimeofday(&currenttime, NULL);
+	float dtime = currenttime.tv_sec - mLastUpdate.tv_sec
+			+ (currenttime.tv_usec - mLastUpdate.tv_usec) / 1000000.0f;
+	mLastUpdate = currenttime;
+
+	mTargetYaw += mRotate * dtime;
+
+	calculateOrientation(dtime);
 	stabilize();
 
+	// Old basic stabilize algorithm
 	/*
 	Vector2<float> xz(accel.x, accel.z);
 	Vector2<float> yz(accel.y, accel.z);
@@ -170,15 +189,15 @@ void Drive::stop() {
 }
 
 float Drive::getRoll() {
-	return mRoll;
+	return mPIDRoll->output();
 }
 
 float Drive::getPitch() {
-	return mPitch;
+	return mPIDPitch->output();
 }
 
 float Drive::getYaw() {
-	return mYaw;
+	return mPIDYaw->output();
 }
 
 void Drive::calibrate(unsigned int millis) {
@@ -224,17 +243,9 @@ void Drive::updateSensors() {
 	mGyroValue[mGyroValueCurrent] = mGyroscope->read();
 }
 
-void Drive::calculateOrientation() {
+void Drive::calculateOrientation(float dtime) {
 	Vector3<float> accel = averageAccelerometer();
 	Vector3<float> gyro = averageGyroscope();
-	
-	struct timeval currenttime;
-	gettimeofday(&currenttime, NULL);
-
-	float dtime = currenttime.tv_sec - mLastUpdate.tv_sec
-			+ (currenttime.tv_usec - mLastUpdate.tv_usec) / 1000000.0f;
-
-	mLastUpdate = currenttime;
 
 	// Adjust for calibration
 	accel.x -= mAccelOffset.x;
@@ -244,15 +255,9 @@ void Drive::calculateOrientation() {
 	gyro.y -= mGyroOffset.y;
 	gyro.z -= mGyroOffset.z;
 
-	// Calculate orientation vector
-//	float mag = magnitude(accel);
-//	Vector3<float> normal;
-//	normal.x = accel.x / mag;
-//	normal.y = accel.y / mag;
-//	normal.z = accel.z / mag;
-
 	Vector3<float> orient(mRoll, mPitch, mYaw);
-	orient += Vector3<float>(gyro.x * dtime, gyro.y * dtime, gyro.z * dtime);
+	// -gyro.y because Gyro has opposite direction to Accelerometer in y axis
+	orient += Vector3<float>(gyro.x * dtime, -gyro.y * dtime, gyro.z * dtime);
 
 	if (orient.x > 180.0f)  orient.x -= 360.0f;
 	if (orient.x < -180.0f) orient.x += 360.0f;
@@ -265,27 +270,44 @@ void Drive::calculateOrientation() {
 	float accelpitch = atan2(accel.y, -sign(accel.z)
 			* sqrt(accel.x * accel.x + accel.z * accel.z)) * 180.0 / PI;
 
-	float factor = 1.0f - magnitude(accel);
-	factor = 1.0f - sign(factor) * factor; // abs.val. of float
+	float accelmag = magnitude(accel);
+	float factor = 1.0f - sign(1.0f - accelmag) * (1.0f - accelmag);
 	if (factor < 0.0f)
 		factor = 0.0f;
 
 	mRoll  = orient.x * (1.0f - factor) + accelroll * factor;
 	mPitch = orient.y * (1.0f - factor) + accelpitch * factor;
-//	mYaw   = orient.z;
-	mPitch = factor;
-	mYaw   = magnitude(accel);
-
-	/*
-	Vector3<float> gyroNormal;
-	gyroNormal.x = sin(orient.x * PI / 180.0);
-	gyroNormal.y = sin(orient.y * PI / 180.0);
-	gyroNormal.z = cos(orient.z * PI / 180.0);
-	*/
+	mYaw   = orient.z;
 }
 
 void Drive::stabilize() {
+	// Adjust PID setpoints
+	mPIDRoll->setTarget(mTargetRoll);
+	mPIDPitch->setTarget(mTargetPitch);
+	//mPIDYaw->setTarget(mTargetYaw);
 
+	// Feed values to PID controllers
+	mPIDRoll->feed(mRoll);
+	mPIDPitch->feed(mPitch);
+	//mPIDYaw->feed(mYaw);
+
+	// Assign motor values based on PID outputs
+	float motorspeeds[4];
+	for (int i = 0; i < 4; ++i)
+		motorspeeds[i] = mTranslate.z;
+
+	double d_ends  = mPIDPitch->output();
+	double d_sides = mPIDRoll->output();
+
+	motorspeeds[0] += -d_ends + d_sides;
+	motorspeeds[1] += -d_ends - d_sides;
+	motorspeeds[2] += d_ends - d_sides;
+	motorspeeds[3] += d_ends + d_sides;
+
+	// Add in rotational motion on top of this!
+
+	for (int i = 0; i < 4; ++i)
+		mMotors[i]->setSpeed(motorspeeds[i]);
 }
 
 Vector3<float> Drive::averageAccelerometer() {

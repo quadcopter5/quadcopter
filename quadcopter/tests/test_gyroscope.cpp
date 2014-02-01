@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
 				values.x /= numsamples;
 				values.y /= numsamples;
 				values.z /= numsamples;
-				printf("X : %8d | Y : %8d | Z : %8d\n",
+				printf("X : %8.8f | Y : %8.8f | Z : %8.8f\n",
 						values.x, values.y, values.z);
 				i = 1;
 

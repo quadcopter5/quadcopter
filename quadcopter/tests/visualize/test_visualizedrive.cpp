@@ -39,15 +39,28 @@ int main(int argc, char **argv) {
 //		connection.connect();
 //		std::cout << "Connected!" << std::endl;
 
-		Drive drive(&pwm, &accel, &gyro, 15, 15, 15, 15, 5);
+		Drive drive(&pwm, &accel, &gyro, 15, 15, 15, 15, 20);
 		drive.calibrate(1000);
+
+		int count = 0;
+		bool up = false;
 
 		std::string input;
 		bool running = true;
 		while (running) {
+			++count;
+			if (count > 200) {
+				count = 0;
+				up = !up;
+				if (up)
+					drive.move(Vector3<float>(5.0f, 0.0f, 0.0f));
+				else
+					drive.move(Vector3<float>(0.0f, 0.0f, 0.0f));
+			}
+
 			drive.update();
 
-			printf("Sending Roll : %+08f | Pitch : %+08f | Yaw : %+08f\n",
+			printf("Sending Roll : %+8.8f | Pitch : %+8.8f | Yaw : %+8.8f\n",
 					drive.getRoll(), drive.getPitch(), drive.getYaw());
 			PacketDiagnostic pkt(0,
 					drive.getRoll(), drive.getPitch(), drive.getYaw());

@@ -224,11 +224,12 @@ class Drive {
 
 		/**
 			Calculate orientation based on stored sensor values (i.e. call
-			updateSensors() before using this)
+			updateSensors() before using this). dtime is the change in time since
+			the last call to this function.
 
 			Stores results in mRoll, mPitch, and mYaw.
 		*/
-		void calculateOrientation();
+		void calculateOrientation(float dtime);
 
 		/**
 			Approach the desired orientation. Uses current values of
