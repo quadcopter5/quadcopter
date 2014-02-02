@@ -90,7 +90,7 @@ $(foreach name,$(COMMON_NAMES),$(eval $(call COMMON_TEMPLATE,$(name))))
 #
 
 QUAD_NAMES = geometry gpio radiouart queuebuffer i2c pwm accelerometer \
-		gyroscope motor drive
+		gyroscope motor pidcontroller drive
 
 $(LIBDIR)/libquadcopter.a: \
 		$(foreach name,$(QUAD_NAMES),$(OBJDIR)/$(name).o)

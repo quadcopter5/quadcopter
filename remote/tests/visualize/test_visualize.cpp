@@ -254,9 +254,13 @@ int main(int argc, char **argv) {
 			
 			// Vertical Scale text
 			std::string text = boost::lexical_cast<std::string>(
-					(int)value_scale)
-					+ "." + boost::lexical_cast<std::string>(
+					(int)value_scale);
+			std::string decimal = boost::lexical_cast<std::string>(
 					(int)(value_scale * 100.0) % 100);
+			if (decimal.size() < 2)
+				decimal = "0" + decimal;
+			text += "." + decimal;
+
 			for (int c = 0; c <= 2; ++c) {
 				drawText(text,
 						font, 8, 798, 12 + 200 * c, TEXT_RIGHT,
@@ -285,7 +289,7 @@ int main(int argc, char **argv) {
 					glColor4d(colors[0].x, colors[0].y, colors[0].z, 1.0);
 					glVertex3d(
 						timepos,
-						(iter->accel.x / value_scale) * 100.0 + 100.5, 5.0);
+						100.5 - (iter->accel.x / value_scale) * 100.0, 5.0);
 					++numpoints;
 				}
 			glEnd();
@@ -300,7 +304,7 @@ int main(int argc, char **argv) {
 					glVertex3d(
 						rightside - (currentticks - iter->timestamp)
 						      / time_scale + 0.5,
-						(iter->accel.y / value_scale) * 100.0 + 300.5, 5.0);
+						300.5 - (iter->accel.y / value_scale) * 100.0, 5.0);
 			glEnd();
 
 			// Z
@@ -313,7 +317,7 @@ int main(int argc, char **argv) {
 					glVertex3d(
 						rightside - (currentticks - iter->timestamp)
 						      / time_scale + 0.5,
-						(iter->accel.z / value_scale) * 100.0 + 500.5, 5.0);
+						500.5 - (iter->accel.z / value_scale) * 100.0, 5.0);
 			glEnd();
 
 			// Cursor
