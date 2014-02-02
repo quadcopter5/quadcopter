@@ -21,6 +21,7 @@
 #include "accelerometer.h"
 #include "gyroscope.h"
 #include "geometry.h"
+#include "pidcontroller.h"
 #include "drive.h"
 
 Drive::Drive(PWM *pwm, Accelerometer *accel, Gyroscope *gyro, int frontleft,
@@ -42,6 +43,18 @@ Drive::Drive(PWM *pwm, Accelerometer *accel, Gyroscope *gyro, int frontleft,
 		mGyroValue[i].z = 0.0f;
 	}
 
+	mRoll  = 0.0f;
+	mPitch = 0.0f;
+	mYaw   = 0.0f;
+
+	mTargetRoll  = 0.0f;
+	mTargetPitch = 0.0f;
+	mTargetYaw   = 0.0f;
+
+	mPIDRoll  = new PIDController(mTargetRoll,  400.0f, 0.5f, 70.0f, 3);
+	mPIDPitch = new PIDController(mTargetPitch, 400.0f, 0.5f, 70.0f, 3);
+	mPIDYaw   = new PIDController(mTargetYaw,   400.0f, 0.5f, 70.0f, 3);
+
 	mMotors[0] = new Motor(pwm, frontleft, 1.27f, 1.6f);
 	mMotors[1] = new Motor(pwm, frontright, 1.27f, 1.6f);
 	mMotors[2] = new Motor(pwm, rearright, 1.27f, 1.6f);
@@ -61,10 +74,6 @@ Drive::Drive(PWM *pwm, Accelerometer *accel, Gyroscope *gyro, int frontleft,
 
 	// Wait for motors to prime
 	usleep(3000000);
-
-	mRoll = 0.0f;
-	mPitch = 0.0f;
-	mYaw = 0.0f;
 
 	// Pre-populate mAccelValue and mGyroValue arrays
 	Vector3<float> aval;
@@ -89,6 +98,10 @@ Drive::~Drive() {
 	delete[] mAccelValue;
 	delete[] mGyroValue;
 
+	delete mPIDRoll;
+	delete mPIDPitch;
+	delete mPIDYaw;
+
 	for (int i = 0; i < 4; ++i) {
 		mMotors[i]->setSpeed(0.0f);
 		delete mMotors[i];
@@ -107,6 +120,7 @@ void Drive::turn(float speed) {
 void Drive::update() {
 	updateSensors();
 	calculateOrientation();
+	stabilize();
 
 	/*
 	Vector2<float> xz(accel.x, accel.z);
@@ -222,7 +236,11 @@ void Drive::calculateOrientation() {
 	mRoll = atan2(-accel.z, accel.x);
 	mPitch = atan2(-accel.z, accel.y);
 
-	mYaw = 0.0f;
+	mYaw = ;
+}
+
+void Drive::stabilize() {
+
 }
 
 Vector3<float> Drive::averageAccelerometer() {

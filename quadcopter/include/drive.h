@@ -23,6 +23,7 @@
 #include "accelerometer.h"
 #include "gyroscope.h"
 #include "geometry.h"
+#include "pidcontroller.h"
 
 class CalibrationException : public Exception {
 	public:
@@ -183,6 +184,16 @@ class Drive {
 		      mPitch,
 		      mYaw;
 
+		// Target orientation (to achieve desired movement)
+		float mTargetRoll,
+		      mTargetPitch,
+		      mTargetYaw;
+
+		// One PID controller per axis of rotation
+		PIDController *mPIDRoll,
+		              *mPIDPitch,
+		              *mPIDYaw;
+
 		// How many frames of accelerometer values to average
 		int mSmoothing;
 
@@ -214,6 +225,15 @@ class Drive {
 			Stores results in mRoll, mPitch, and mYaw.
 		*/
 		void calculateOrientation();
+
+		/**
+			Approach the desired orientation. Uses current values of
+			orientation, as set by calculateOrientation(), to approach the
+			desired orientation per mRoll/mPitch/mYaw.
+
+			Adjusts motor speeds accordingly.
+		*/
+		void stabilize();
 
 		/**
 			Returns the average of the values in mAccelValue
