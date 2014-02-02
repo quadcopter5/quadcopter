@@ -16,6 +16,7 @@
 #define DRIVE_H
 
 #include <string>
+#include <sys/time.h>
 
 #include "exception.h"
 #include "pwm.h"
@@ -201,6 +202,9 @@ class Drive {
 		// the "zero" value.
 		Vector3<float> mAccelOffset;
 		Vector3<float> mGyroOffset;
+
+		// Time of the last update of orientation values
+		struct timeval mLastUpdate;
 
 		/**
 			Update the sensor value buffers

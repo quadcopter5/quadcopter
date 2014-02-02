@@ -37,6 +37,26 @@ struct Vector2 {
 		x -= other.x;
 		y -= other.y;
 	}
+
+	Vector2<T> operator-() {
+		return Vector2<T>(-x, -y);
+	}
+
+	Vector2<T> operator+(Vector2<T> other) {
+		return Vector2<T>(x + other.x, y + other.y);
+	}
+
+	Vector2<T> operator-(Vector2<T> other) {
+		return (*this) + (-other);
+	}
+
+	Vector2<T> operator*(T scalar) {
+		return Vector2<T>(x * scalar, y * scalar);
+	}
+
+	Vector2<T> operator/(T scalar) {
+		return Vector2<T>(x / scalar, y / scalar);
+	}
 };
 
 template<typename T>
@@ -61,6 +81,26 @@ struct Vector3 {
 		x -= other.x;
 		y -= other.y;
 		z -= other.z;
+	}
+
+	Vector3<T> operator-() {
+		return Vector3<T>(-x, -y, -z);
+	}
+
+	Vector3<T> operator+(Vector3<T> other) {
+		return Vector3<T>(x + other.x, y + other.y, z + other.z);
+	}
+
+	Vector3<T> operator-(Vector3<T> other) {
+		return (*this) + (-other);
+	}
+
+	Vector3<T> operator*(T scalar) {
+		return Vector2<T>(x * scalar, y * scalar, z * scalar);
+	}
+
+	Vector3<T> operator/(T scalar) {
+		return Vector2<T>(x / scalar, y / scalar, z / scalar);
 	}
 };
 

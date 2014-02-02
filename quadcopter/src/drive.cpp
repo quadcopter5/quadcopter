@@ -14,6 +14,7 @@
 #include <string>
 #include <fstream>
 #include <limits>
+#include <sys/time.h>
 
 #include "exception.h"
 #include "pwm.h"
@@ -62,6 +63,7 @@ Drive::Drive(PWM *pwm, Accelerometer *accel, Gyroscope *gyro, int frontleft,
 	// Wait for motors to prime
 	usleep(3000000);
 
+	gettimeofday(&mLastUpdate, NULL);
 	mRoll = 0.0f;
 	mPitch = 0.0f;
 	mYaw = 0.0f;
@@ -210,6 +212,14 @@ void Drive::updateSensors() {
 void Drive::calculateOrientation() {
 	Vector3<float> accel = averageAccelerometer();
 	Vector3<float> gyro = averageGyroscope();
+	
+	struct timeval currenttime;
+	gettimeofday(&currenttime, NULL);
+
+	float dtime = currenttime.tv_sec - mLastUpdate.tv_sec
+			+ (currenttime.tv_usec - mLastUpdate.tv_usec) / 1000000.0f;
+
+	mLastUpdate = currenttime;
 
 	// Adjust for calibration
 	accel.x -= mAccelOffset.x;
@@ -219,10 +229,44 @@ void Drive::calculateOrientation() {
 	gyro.y -= mGyroOffset.y;
 	gyro.z -= mGyroOffset.z;
 
-	mRoll = atan2(-accel.z, accel.x);
-	mPitch = atan2(-accel.z, accel.y);
+	// Calculate orientation vector
+//	float mag = magnitude(accel);
+//	Vector3<float> normal;
+//	normal.x = accel.x / mag;
+//	normal.y = accel.y / mag;
+//	normal.z = accel.z / mag;
 
-	mYaw = 0.0f;
+	Vector3<float> orient(mRoll, mPitch, mYaw);
+	orient += Vector3<float>(gyro.x * dtime, gyro.y * dtime, gyro.z * dtime);
+
+	if (orient.x > 180.0f)  orient.x -= 360.0f;
+	if (orient.x < -180.0f) orient.x += 360.0f;
+	if (orient.y > 180.0f)  orient.y -= 360.0f;
+	if (orient.y < -180.0f) orient.y += 360.0f;
+	if (orient.z > 180.0f)  orient.z -= 360.0f;
+	if (orient.z < -180.0f) orient.z += 360.0f;
+
+	float accelroll = atan2(accel.x, -accel.z) * 180.0 / PI;
+	float accelpitch = atan2(accel.y, -sign(accel.z)
+			* sqrt(accel.x * accel.x + accel.z * accel.z)) * 180.0 / PI;
+
+	float factor = 1.0f - magnitude(accel);
+	factor = 1.0f - sign(factor) * factor; // abs.val. of float
+	if (factor < 0.0f)
+		factor = 0.0f;
+
+	mRoll  = orient.x * (1.0f - factor) + accelroll * factor;
+	mPitch = orient.y * (1.0f - factor) + accelpitch * factor;
+//	mYaw   = orient.z;
+	mPitch = factor;
+	mYaw   = magnitude(accel);
+
+	/*
+	Vector3<float> gyroNormal;
+	gyroNormal.x = sin(orient.x * PI / 180.0);
+	gyroNormal.y = sin(orient.y * PI / 180.0);
+	gyroNormal.z = cos(orient.z * PI / 180.0);
+	*/
 }
 
 Vector3<float> Drive::averageAccelerometer() {
