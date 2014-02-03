@@ -129,6 +129,7 @@ class PWM {
 		float    mLoad[16];
 //		uint16_t mLoCount[16]; // The low value for the dither
 		uint16_t mCount[16]; // The count out of 4095 to switch from ON to OFF
+		uint16_t mCounter[16];
 
 		struct timeval mFrameStart; // start time of the current dither frame
 		long mFrameLength; // length of dithering frame, in microseconds

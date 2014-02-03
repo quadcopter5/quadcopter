@@ -58,6 +58,12 @@ PWM::PWM(I2C *i2c, uint8_t slaveaddr) {
 	mSlaveAddr = slaveaddr;
 	mFrequency = 20;
 
+	for (int i = 0; i < 16; ++i) {
+		mLoad[i] = 0.0f;
+		mCount[i] = 0;
+		mCounter[i] = 0;
+	}
+
 	setFrequency(mFrequency);
 }
 
@@ -186,14 +192,32 @@ void PWM::update(unsigned int channel) {
 	if (channel > 15)
 		THROW_EXCEPT(PWMException, "Invalid PWM channel given");
 
+	float partial = mLoad[channel] * 4095.0f
+			- (uint16_t)(mLoad[channel] * 4095.0f);
+	uint16_t lo_value = (uint16_t)(mLoad[channel] * 4095.0f);
+
+	// Counter-based algorithm
+	mCounter[channel]++;
+	if (mCounter[channel] > 4)
+		mCounter[channel] = 0;
+
+	long switch_count = partial * 4;
+	if (mCounter[channel] < switch_count) {
+		if (mCount[channel] != lo_value + 1)
+			setExactLoad(channel, lo_value + 1);
+	} else {
+		if (mCount[channel] != lo_value)
+			setExactLoad(channel, lo_value);
+	}
+
+	return;
+
+	// Time-based algorithm
+
 	struct timeval current;
 	gettimeofday(&current, NULL);
 
-	float partial = mLoad[channel] * 4095.0f
-			- (uint16_t)(mLoad[channel] * 4095.0f);
 	long switch_time = partial * mFrameLength;
-
-	uint16_t lo_value = (uint16_t)(mLoad[channel] * 4095.0f);
 
 	long elapsed = (current.tv_sec - mFrameStart.tv_sec) * 1000000
 			- current.tv_usec - mFrameStart.tv_usec;
@@ -202,6 +226,8 @@ void PWM::update(unsigned int channel) {
 		// Don't care too much about overflow in elapsed... it'll just skip a
 		// single frame, and it would only happen if update() is not called for
 		// a while
+
+		/*
 		long elapsed_start = elapsed - elapsed % mFrameLength;
 		mFrameStart.tv_sec += elapsed_start / 1000000;
 		mFrameStart.tv_usec += elapsed_start % 1000000;
@@ -210,13 +236,18 @@ void PWM::update(unsigned int channel) {
 			mFrameStart.tv_usec = mFrameStart.tv_usec % 1000000;
 		}
 		elapsed -= elapsed_start;
+		*/
+
+		// Simple, stupid method
+		gettimeofday(&mFrameStart, NULL);
+		elapsed = 0;
 	}
 
 	if (elapsed < switch_time) {
 		if (mCount[channel] != lo_value)
 			setExactLoad(channel, lo_value);
 	} else {
-		if (mCount[channel] == lo_value)
+		if (mCount[channel] != lo_value + 1)
 			setExactLoad(channel, lo_value + 1);
 	}
 }

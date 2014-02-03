@@ -33,6 +33,7 @@ void startUnbufferedInput() {
 	in_newattr.c_lflag = ISIG;
 	in_newattr.c_cc[VMIN] = 0;
 	in_newattr.c_cc[VTIME] = 0;
+	in_newattr.c_cc[VERASE] = _POSIX_VDISABLE;
 
 	tcsetattr(STDIN_FILENO, TCSANOW, &in_newattr);
 }
@@ -62,7 +63,8 @@ int main(int argc, char **argv) {
 		const size_t buffer_len = 50;
 		size_t buffer_pos = 0;
 		size_t bytes;
-		char buffer[buffer_len];
+		char buffer[buffer_len],
+			  c;
 		bool completed = false;
 
 		memset(buffer, 0, buffer_len);
@@ -73,22 +75,33 @@ int main(int argc, char **argv) {
 		for (int i = 0; i < 4; ++i)
 			motors[i]->setSpeed(speed / 100.0f);
 		std::cout << "Set speed to " << speed << "%" << std::endl;
+		std::cout << "Use ^H (CTRL-H) or CTRL-BACKSPACE to backspace"
+		          << std::endl;
 		std::cout << "Enter new speed (%) : ";
+		std::cout.flush();
 
 		while (running) {
 
-			while ((bytes = read(STDIN_FILENO, &buffer[buffer_pos],
-					buffer_len - buffer_pos)) > 0) {
+			while ((bytes = read(STDIN_FILENO, &c, 1)) > 0) {
 				completed = false;
 				if (buffer_pos >= buffer_len) {
 					buffer[buffer_len - 1] = '\0';
 					completed = true;
 				} else {
-					for (int c = buffer_pos; c < bytes; ++c) {
-						if (buffer[c] == '\n') {
-							buffer[c] = '\0';
-							completed = true;
-						}
+					if (c == '\b' && buffer_pos > 0) {
+						std::cout << "\b \b";
+						std::cout.flush();
+						--buffer_pos;
+						buffer[buffer_pos] = '\0';
+					} else if (c >= '0' && c <= '9' || c == '.') {
+						buffer[buffer_pos] = c;
+						std::cout << c;
+						std::cout.flush();
+						++buffer_pos;
+					} else if (c == '\n') {
+						std::cout << std::endl;
+						buffer[buffer_pos] = '\0';
+						completed = true;
 					}
 				}
 			}
@@ -107,12 +120,15 @@ int main(int argc, char **argv) {
 					std::cout << "Set speed to " << speed << "%"
 							<< std::endl;
 					std::cout << "Enter new speed (%) : ";
+					std::cout.flush();
 				}
 			}
 			completed = false;
 
 			for (int i = 0; i < 4; ++i)
 				motors[i]->update();
+
+			usleep(1000000 / 50);
 		}
 
 		std::cout << "Exiting..." << std::endl

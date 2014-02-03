@@ -76,6 +76,7 @@ int main(int argc, char **argv) {
 
 		char   c;
 		bool   running = true;
+		int    count_comm = 0;
 		Packet *pkt = 0;
 
 		while (running && read(STDIN_FILENO, &c, 1) == 0) {
@@ -120,9 +121,13 @@ int main(int argc, char **argv) {
 
 			drive.update();
 
-			PacketDiagnostic out(0, drive.getRoll(), drive.getPitch(),
-					drive.getYaw());
-			connection.send(&out);
+			++count_comm;
+			if (count_comm >= 5) {
+				count_comm = 0;
+				PacketDiagnostic out(0, drive.getRoll(), drive.getPitch(),
+						drive.getYaw());
+				connection.send(&out);
+			}
 
 			usleep(10000); // 10,000 us = 0.01 ms = 100Hz = accel update rate
 			//usleep(100000);
