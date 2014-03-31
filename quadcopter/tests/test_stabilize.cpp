@@ -57,12 +57,14 @@ int main(int argc, char **argv) {
 		pwm.setFrequency(50);
 		Accelerometer accel(&i2c, 0x53, Accelerometer::RANGE_2G,
 				Accelerometer::SRATE_50HZ);
+		Gyroscope gyro(&i2c, 0x69, Gyroscope::RANGE_250DPS,
+				Gyroscope::SRATE_100HZ);
 
 		std::cout << "Waiting for connection..." << std::endl;
 		connection.connect();
 		std::cout << "Connected!" << std::endl;
 
-		Drive drive(&pwm, &accel, 0, 2, 5, 7, 10);
+		Drive drive(&pwm, &accel, &gyro, 0, 2, 5, 7, 10);
 
 		char   c;
 		bool   running = true;

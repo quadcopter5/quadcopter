@@ -57,9 +57,9 @@ Drive::Drive(PWM *pwm, Accelerometer *accel, Gyroscope *gyro, int frontleft,
 	mTargetPitch = 0.0f;
 	mTargetYaw   = 0.0f;
 
-	mPIDRoll  = new PIDController(mTargetRoll,  5.0f, 2.0f, 2.0f, 5);
-	mPIDPitch = new PIDController(mTargetPitch, 5.0f, 2.0f, 2.0f, 5);
-	mPIDYaw   = new PIDController(mTargetYaw,   5.0f, 2.0f, 2.0f, 5);
+	mPIDRoll  = new PIDController(mTargetRoll,  15.0f, 10.0f, 5.0f, 5);
+	mPIDPitch = new PIDController(mTargetPitch, 15.0f, 10.0f, 5.0f, 5);
+	mPIDYaw   = new PIDController(mTargetYaw,   15.0f, 10.0f, 5.0f, 5);
 
 	mMotors[0] = new Motor(pwm, frontleft, 1.27f, 1.6f);
 	mMotors[1] = new Motor(pwm, frontright, 1.27f, 1.6f);
@@ -110,11 +110,10 @@ Drive::~Drive() {
 	delete mPIDPitch;
 	delete mPIDYaw;
 
-	for (int i = 0; i < 4; ++i) {
-		mMotors[i]->setSpeed(0.0f);
-		delete mMotors[i];
-	}
+	stop();
 	usleep(100000);
+	for (int i = 0; i < 4; ++i)
+		delete mMotors[i];
 }
 
 void Drive::move(Vector3<float> velocity) {
@@ -189,15 +188,19 @@ void Drive::stop() {
 }
 
 float Drive::getRoll() {
-	return mPIDRoll->output();
+	//return mPIDRoll->output();
+	return mRoll;
 }
 
 float Drive::getPitch() {
-	return mPIDPitch->output();
+	//return mPIDPitch->output();
+	return mPitch;
 }
 
 float Drive::getYaw() {
-	return mPIDYaw->output();
+	//return mMotors[0]->getSpeed();
+	//return mPIDYaw->output();
+	return mYaw;
 }
 
 void Drive::calibrate(unsigned int millis) {
@@ -296,18 +299,21 @@ void Drive::stabilize() {
 	for (int i = 0; i < 4; ++i)
 		motorspeeds[i] = mTranslate.z;
 
-	double d_ends  = mPIDPitch->output();
-	double d_sides = mPIDRoll->output();
+	double d_ends  = mPIDPitch->output() / 5000.0f;
+	double d_sides = mPIDRoll->output() / 5000.0f;
 
-	motorspeeds[0] += -d_ends + d_sides;
-	motorspeeds[1] += -d_ends - d_sides;
-	motorspeeds[2] += d_ends - d_sides;
-	motorspeeds[3] += d_ends + d_sides;
+	motorspeeds[0] += d_ends - d_sides;
+	motorspeeds[1] += d_ends + d_sides;
+	motorspeeds[2] += -d_ends + d_sides;
+	motorspeeds[3] += -d_ends - d_sides;
 
-	// Add in rotational motion on top of this!
+	// Need to add in rotational motion on top of this!
 
-	for (int i = 0; i < 4; ++i)
+	for (int i = 0; i < 4; ++i) {
+		if (motorspeeds[i] < 0.0f)
+			motorspeeds[i] = 0.0f;
 		mMotors[i]->setSpeed(motorspeeds[i]);
+	}
 }
 
 Vector3<float> Drive::averageAccelerometer() {
