@@ -48,14 +48,19 @@ void drawText(const std::string &text, boost::shared_ptr<Font> fnt, int size,
 		double green = 1.0, double blue = 1.0, double alpha = 1.0);
 
 int main(int argc, char **argv) {
+	std::string devicename("/dev/ttyUSB0");
+	if (argc > 1) {
+		devicename.assign(argv[1]);
+	}
+
 	// Initialize radio
 	try {
-		RadioLinux radio("/dev/ttyUSB0", 57600, Radio::PARITY_EVEN);
+		RadioLinux radio(devicename, 57600, Radio::PARITY_EVEN);
 		RadioConnection connection(&radio);
 
-//		std::cout << "Waiting for connection..." << std::endl;
-//		connection.connect();
-//		std::cout << "Connected!" << std::endl;
+		std::cout << "Waiting for connection..." << std::endl;
+		connection.connect();
+		std::cout << "Connected!" << std::endl;
 
 		if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 			std::cout << "Could not initialize SDL" << std::endl;
