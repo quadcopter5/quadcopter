@@ -25,15 +25,15 @@ struct Vector2 {
 	Vector2(T nx, T ny) : x(nx), y(ny)
 			{ }
 
-	Vector2(Vector2 &other) : x(other.x), y(other.y)
+	Vector2(const Vector2 &other) : x(other.x), y(other.y)
 			{ }
 
-	void operator+=(Vector2<T> other) {
+	void operator+=(const Vector2<T> &other) {
 		x += other.x;
 		y += other.y;
 	}
 
-	void operator-=(Vector2<T> other) {
+	void operator-=(const Vector2<T> &other) {
 		x -= other.x;
 		y -= other.y;
 	}
@@ -42,11 +42,11 @@ struct Vector2 {
 		return Vector2<T>(-x, -y);
 	}
 
-	Vector2<T> operator+(Vector2<T> other) {
+	Vector2<T> operator+(const Vector2<T> &other) {
 		return Vector2<T>(x + other.x, y + other.y);
 	}
 
-	Vector2<T> operator-(Vector2<T> other) {
+	Vector2<T> operator-(const Vector2<T> &other) {
 		return (*this) + (-other);
 	}
 
@@ -71,13 +71,13 @@ struct Vector3 {
 	Vector3(const Vector3 &other) : x(other.x), y(other.y), z(other.z)
 			{ }
 
-	void operator+=(Vector3<T> other) {
+	void operator+=(const Vector3<T> &other) {
 		x += other.x;
 		y += other.y;
 		z += other.z;
 	}
 
-	void operator-=(Vector3<T> other) {
+	void operator-=(const Vector3<T> &other) {
 		x -= other.x;
 		y -= other.y;
 		z -= other.z;
@@ -87,11 +87,11 @@ struct Vector3 {
 		return Vector3<T>(-x, -y, -z);
 	}
 
-	Vector3<T> operator+(Vector3<T> other) {
+	Vector3<T> operator+(const Vector3<T> &other) {
 		return Vector3<T>(x + other.x, y + other.y, z + other.z);
 	}
 
-	Vector3<T> operator-(Vector3<T> other) {
+	Vector3<T> operator-(const Vector3<T> &other) {
 		return (*this) + (-other);
 	}
 

@@ -27,8 +27,7 @@ void quit(int code) {
 	exit(code);
 }
 
-int main(int argc, char **argv) {
-
+void startUnbufferedInput() {
 	// Get current console termios attributes (so we can restore it later)
 	tcgetattr(STDIN_FILENO, &in_oldattr);
 	memcpy(&in_newattr, &in_oldattr, sizeof(struct termios));
@@ -39,6 +38,9 @@ int main(int argc, char **argv) {
 	in_newattr.c_cc[VTIME] = 0;
 
 	tcsetattr(STDIN_FILENO, TCSANOW, &in_newattr);
+}
+
+int main(int argc, char **argv) {
 
 	try {
 		RadioLinux radio("/dev/ttyUSB0", 57600, Radio::PARITY_EVEN);
@@ -49,6 +51,8 @@ int main(int argc, char **argv) {
 		std::cout << "Connected!" << std::endl;
 
 		std::cout << "Use W and S to move up and down" << std::endl;
+
+		startUnbufferedInput();
 
 		char c;
 		int bytes;

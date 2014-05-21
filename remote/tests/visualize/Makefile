@@ -21,11 +21,11 @@ lib/:
 	mkdir -p lib
 
 visualize.x: test_visualize.cpp lib/graphics.a
-	$(CC) $(DEBUGFLAGS) test_visualize.cpp lib/graphics.a \
+	$(CC) $(RELEASEFLAGS) test_visualize.cpp lib/graphics.a \
 		$(LDFLAGS_RELEASE) -o $@
 
 visualize_d.x: test_visualize.cpp lib/graphics_d.a
-	$(CC) $(RELEASEFLAGS) test_visualize.cpp lib/graphics_d.a \
+	$(CC) $(DEBUGFLAGS) test_visualize.cpp lib/graphics_d.a \
 		$(LDFLAGS_DEBUG) -o $@
 
 
