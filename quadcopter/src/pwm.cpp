@@ -62,10 +62,10 @@ PWM::PWM(I2C *i2c, uint8_t slaveaddr) {
 
 PWM::~PWM() {
 	// Put into sleep mode
-	char buffer[2];
-	buffer[0] = MODE1;
-	buffer[1] = MODE1_AI | MODE1_SLEEP;
-	mI2C->write(mSlaveAddr, buffer, 2);
+	// Removed this because putting the PCA9685 to sleep causes it to stop
+	// outputting its PWM signals. Then the motors see no signal and start
+	// beeping.
+//	setSleep(true);
 }
 
 void PWM::setFrequency(unsigned int hertz) {
@@ -78,10 +78,7 @@ void PWM::setFrequency(unsigned int hertz) {
 	mFrequency = hertz;
 
 	// Put to sleep before modifying PRE_SCALE
-	bufsize = 2;
-	buffer[0] = MODE1;
-	buffer[1] = MODE1_AI | MODE1_SLEEP;
-	mI2C->write(mSlaveAddr, buffer, bufsize);
+	setSleep(true);
 
 	usleep(1000);
 
@@ -149,5 +146,14 @@ void PWM::setHighTime(unsigned int channel, float millis) {
 	buffer[4] = (char)((offcount & 0x0F00) >> 8); // LEDx_OFF_H
 
 	mI2C->write(mSlaveAddr, buffer, 5);
+}
+
+void PWM::setSleep(bool enabled) {
+	char buffer[2];
+	buffer[0] = MODE1;
+	buffer[1] = MODE1_AI;
+	if (enabled)
+		buffer[1] |= MODE1_SLEEP;
+	mI2C->write(mSlaveAddr, buffer, 2);
 }
 

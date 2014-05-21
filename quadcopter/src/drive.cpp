@@ -57,14 +57,14 @@ Drive::Drive(PWM *pwm, Accelerometer *accel, Gyroscope *gyro, int frontleft,
 	mTargetPitch = 0.0f;
 	mTargetYaw   = 0.0f;
 
-	mPIDRoll  = new PIDController(mTargetRoll,  15.0f, 10.0f, 5.0f, 5);
-	mPIDPitch = new PIDController(mTargetPitch, 15.0f, 10.0f, 5.0f, 5);
-	mPIDYaw   = new PIDController(mTargetYaw,   15.0f, 10.0f, 5.0f, 5);
+	mPIDRoll  = new PIDController(mTargetRoll,  10.0f, 1.0f, 0.0f, 5);
+	mPIDPitch = new PIDController(mTargetPitch, 10.0f, 1.0f, 0.0f, 5);
+	mPIDYaw   = new PIDController(mTargetYaw,   5.0f, 0.0f, 0.0f, 5);
 
-	mMotors[0] = new Motor(pwm, frontleft, 1.27f, 1.6f);
-	mMotors[1] = new Motor(pwm, frontright, 1.27f, 1.6f);
-	mMotors[2] = new Motor(pwm, rearright, 1.27f, 1.6f);
-	mMotors[3] = new Motor(pwm, rearleft, 1.27f, 1.6f);
+	mMotors[0] = new Motor(pwm, frontleft, 1.26f, 1.6f);
+	mMotors[1] = new Motor(pwm, frontright, 1.26f, 1.6f);
+	mMotors[2] = new Motor(pwm, rearright, 1.26f, 1.6f);
+	mMotors[3] = new Motor(pwm, rearleft, 1.26f, 1.6f);
 
 	mAccelOffset.x = 0.0f;
 	mAccelOffset.y = 0.0f;
@@ -75,7 +75,7 @@ Drive::Drive(PWM *pwm, Accelerometer *accel, Gyroscope *gyro, int frontleft,
 	try {
 		loadCalibration("calibration.ini");
 	} catch (CalibrationException &e) {
-		std::cout << "WARNING: Contimuimg without calibration" << std::endl;
+		std::cout << "WARNING: Continuimg without calibration" << std::endl;
 	}
 
 	// Wait for motors to prime
@@ -98,8 +98,8 @@ Drive::Drive(PWM *pwm, Accelerometer *accel, Gyroscope *gyro, int frontleft,
 
 	calculateOrientation(0.0f);
 
-	for (int i = 0; i < 4; ++i)
-		mMotors[i]->setSpeed(0.0f);
+	// Set the motors to resting to start
+	stop();
 }
 
 Drive::~Drive() {
@@ -238,12 +238,26 @@ void Drive::updateSensors() {
 	++mAccelValueCurrent;
 	if (mAccelValueCurrent >= mSmoothing)
 		mAccelValueCurrent = 0;
-	mAccelValue[mAccelValueCurrent] = mAccelerometer->read();
+
+	try {
+		// Fix exception handling for production
+		mAccelValue[mAccelValueCurrent] = mAccelerometer->read();
+	} catch (Exception &e) {
+		std::cout << "Accelerometer read." << std::endl;
+		throw e;
+	}
 
 	++mGyroValueCurrent;
 	if (mGyroValueCurrent >= mSmoothing)
 		mGyroValueCurrent = 0;
-	mGyroValue[mGyroValueCurrent] = mGyroscope->read();
+
+	try {
+		// Fix exception handling for production
+		mGyroValue[mGyroValueCurrent] = mGyroscope->read();
+	} catch (Exception &e) {
+		std::cout << "Gyroscope read." << std::endl;
+		throw e;
+	}
 }
 
 void Drive::calculateOrientation(float dtime) {
@@ -296,23 +310,38 @@ void Drive::stabilize() {
 
 	// Assign motor values based on PID outputs
 	float motorspeeds[4];
+//	for (int i = 0; i < 4; ++i)
+//		motorspeeds[i] = mTranslate.z;
+
+	// Temporary isolation of opposing motors
 	for (int i = 0; i < 4; ++i)
-		motorspeeds[i] = mTranslate.z;
+		motorspeeds[i] = 0.0f;
+	motorspeeds[0] = mTranslate.z;
+	motorspeeds[2] = mTranslate.z;
 
 	double d_ends  = mPIDPitch->output() / 5000.0f;
 	double d_sides = mPIDRoll->output() / 5000.0f;
 
 	motorspeeds[0] += d_ends - d_sides;
-	motorspeeds[1] += d_ends + d_sides;
+	//motorspeeds[1] += d_ends + d_sides;
 	motorspeeds[2] += -d_ends + d_sides;
-	motorspeeds[3] += -d_ends - d_sides;
+	//motorspeeds[3] += -d_ends - d_sides;
 
 	// Need to add in rotational motion on top of this!
 
-	for (int i = 0; i < 4; ++i) {
-		if (motorspeeds[i] < 0.0f)
-			motorspeeds[i] = 0.0f;
-		mMotors[i]->setSpeed(motorspeeds[i]);
+	try {
+		// Remove try block in production... or make it useful somehow for
+		// handling errors
+		for (int i = 0; i < 4; ++i) {
+			if (motorspeeds[i] < 0.0f)
+				motorspeeds[i] = 0.0f;
+			mMotors[i]->setSpeed(motorspeeds[i]);
+		}
+	} catch (Exception &e) {
+		std::cout << "Stupid shit. " << motorspeeds[0] << ", "
+				<< motorspeeds[1] << ", " << motorspeeds[2] << ", "
+				<< motorspeeds[4] << std::endl;
+		throw e;
 	}
 }
 

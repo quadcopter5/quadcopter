@@ -35,9 +35,9 @@ int main(int argc, char **argv) {
 		RadioUART radio(57600, Radio::PARITY_EVEN);
 		RadioConnection connection(&radio);
 
-		std::cout << "Waiting for connection..." << std::endl;
-		connection.connect();
-		std::cout << "Connected!" << std::endl;
+//		std::cout << "Waiting for connection..." << std::endl;
+//		connection.connect();
+//		std::cout << "Connected!" << std::endl;
 
 		Drive drive(&pwm, &accel, &gyro, 15, 15, 15, 15, 20);
 		drive.calibrate(1000);
