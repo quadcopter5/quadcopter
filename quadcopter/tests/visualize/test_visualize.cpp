@@ -33,9 +33,9 @@ int main(int argc, char **argv) {
 		RadioUART radio(57600, Radio::PARITY_EVEN);
 		RadioConnection connection(&radio);
 
-		std::cout << "Waiting for connection..." << std::endl;
-		connection.connect();
-		std::cout << "Connected!" << std::endl;
+//		std::cout << "Waiting for connection..." << std::endl;
+//		connection.connect();
+//		std::cout << "Connected!" << std::endl;
 
 		Vector3<float> values;
 

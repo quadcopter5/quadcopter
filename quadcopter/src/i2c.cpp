@@ -97,7 +97,8 @@ void I2C::sendTransaction() {
 
 		int iostatus;
 		if ((iostatus = ioctl(mFd, I2C_RDWR, &iodata)) < 0)
-			THROW_EXCEPT(I2CException, "I2C ioctl() failed");
+			THROW_EXCEPT(I2CException, "I2C ioctl() failed: "
+					+ std::string(strerror(errno)));
 
 		mQueue.clear();
 	}

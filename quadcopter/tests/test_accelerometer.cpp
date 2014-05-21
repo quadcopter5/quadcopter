@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
 			printf("X : %+08f | Y : %+08f | Z : %+08f\n",
 					values.x, values.y, values.z);
 
-			usleep(10000);
+			usleep(1000);
 		}
 
 	} catch (I2CException &e) {

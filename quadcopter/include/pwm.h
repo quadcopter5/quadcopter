@@ -96,6 +96,16 @@ class PWM {
 		*/
 		void setHighTime(unsigned int channel, float millis);
 
+		/**
+			Set the sleep mode for the PCA9685 (sleep mode consumes less power,
+			but does not output any PWM signals).
+
+			enabled
+			   true  : sleep mode enabled
+			   false : sleep mode disabled (running normally)
+		*/
+		void setSleep(bool enabled);
+
 	private:
 		I2C     *mI2C;
 		uint8_t mSlaveAddr;

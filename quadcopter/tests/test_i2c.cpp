@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <stdint.h>
+#include <unistd.h>
 
 #include "i2c.h"
 
@@ -22,14 +23,18 @@ int main(int argc, char **argv) {
 		std::cout << "Returned value: 0x" << std::hex << (int)data[1]
 				<< std::endl;
 
-		std::cout << "Doing queued transaction" << std::endl;
+		for (int i = 0; i < 10000; ++i) {
+			std::cout << "Doing queued transaction" << std::endl;
 
-		connection.enqueueWrite(0x53, &data[0], 1);
-		connection.enqueueRead(0x53, &data[1], 1);
-		connection.sendTransaction();
+			connection.enqueueWrite(0x53, &data[0], 1);
+			connection.enqueueRead(0x53, &data[1], 1);
+			connection.sendTransaction();
 
-		std::cout << "Returned value: 0x" << std::hex << (int)data[1]
-				<< std::endl;
+			std::cout << "Returned value: 0x" << std::hex << (int)data[1]
+					<< std::endl;
+
+			usleep(100);
+		}
 
 	} catch (I2CException &e) {
 		std::cerr << "EXCEPTION: " << e.getDescription() << std::endl;

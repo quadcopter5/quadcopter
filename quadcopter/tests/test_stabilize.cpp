@@ -34,8 +34,7 @@ void quit(int code) {
 	exit(code);
 }
 
-int main(int argc, char **argv) {
-
+void startUnbufferedInput() {
 	// Get current console termios attributes (so we can restore it later)
 	tcgetattr(STDIN_FILENO, &in_oldattr);
 	memcpy(&in_newattr, &in_oldattr, sizeof(struct termios));
@@ -46,6 +45,9 @@ int main(int argc, char **argv) {
 	in_newattr.c_cc[VTIME] = 0;
 
 	tcsetattr(STDIN_FILENO, TCSANOW, &in_newattr);
+}
+
+int main(int argc, char **argv) {
 
 	try {
 
@@ -60,9 +62,15 @@ int main(int argc, char **argv) {
 		Gyroscope gyro(&i2c, 0x69, Gyroscope::RANGE_250DPS,
 				Gyroscope::SRATE_100HZ);
 
-		std::cout << "Waiting for connection..." << std::endl;
+		std::cout << "Waiting for connection... (CTRL-C to stop)" << std::endl;
 		connection.connect();
 		std::cout << "Connected!" << std::endl;
+
+		// Start this only after connected, so user can force the program to stop
+		// waiting
+		startUnbufferedInput();
+
+		std::cout << "Press ENTER to quit" << std::endl;
 
 		Drive drive(&pwm, &accel, &gyro, 0, 2, 5, 7, 10);
 
@@ -98,7 +106,13 @@ int main(int argc, char **argv) {
 			}
 
 			drive.update();
+
+			PacketMotion out((int8_t)drive.getRoll(), (int8_t)drive.getPitch(),
+					(int8_t)drive.getYaw(), 0);
+			connection.send(&out);
+
 			usleep(20000); // 20,000 us = 0.02 ms = accelerometer update rate
+			//usleep(100000);
 		}
 
 		std::cout << "Stopping motors" << std::endl;
