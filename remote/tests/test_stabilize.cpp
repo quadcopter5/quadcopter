@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
 		char c;
 		int bytes;
 
-		char value = 0;
+		char x = 0, y = 0, z = 0;
 		bool running = true;
 		while (running) {
 			while ((bytes = read(STDIN_FILENO, &c, 1)) > 0) {
@@ -69,17 +69,41 @@ int main(int argc, char **argv) {
 						running = false;
 					}	break;
 					case 'w': {
-						value += 4;
-						PacketMotion p(0, 0, value, 0);
+						z += 4;
+						PacketMotion p(x, y, z, 0);
 						connection.send(&p);
-						std::cout << "Sent z signal = " << (int)value
+						std::cout << "Sent signal (x = " << (int)x
+								<< ", y = " << (int)y
+								<< ", z = " << (int)z
 								<< std::endl;
 					}	break;
 					case 's': {
-						value -= 4;
-						PacketMotion p(0, 0, value, 0);
+						z -= 4;
+						PacketMotion p(x, y, z, 0);
 						connection.send(&p);
-						std::cout << "Sent z signal = " << (int)value
+						std::cout << "Sent signal (x = " << (int)x
+								<< ", y = " << (int)y
+								<< ", z = " << (int)z
+								<< std::endl;
+					}	break;
+					case 'a': {
+						x -= 4;
+						y -= 4;
+						PacketMotion p(x, y, z, 0);
+						connection.send(&p);
+						std::cout << "Sent signal (x = " << (int)x
+								<< ", y = " << (int)y
+								<< ", z = " << (int)z
+								<< std::endl;
+					}	break;
+					case 'd': {
+						x += 4;
+						y += 4;
+						PacketMotion p(x, y, z, 0);
+						connection.send(&p);
+						std::cout << "Sent signal (x = " << (int)x
+								<< ", y = " << (int)y
+								<< ", z = " << (int)z
 								<< std::endl;
 					}	break;
 					default:
