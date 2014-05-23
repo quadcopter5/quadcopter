@@ -43,9 +43,9 @@ int main(int argc, char **argv) {
 		RadioLinux radio("/dev/ttyUSB0", 57600, Radio::PARITY_EVEN);
 		RadioConnection connection(&radio);
 
-//		std::cout << "Waiting for connection..." << std::endl;
-//		connection.connect();
-//		std::cout << "Connected!" << std::endl;
+		std::cout << "Waiting for connection..." << std::endl;
+		connection.connect();
+		std::cout << "Connected!" << std::endl;
 
 		std::cout << "Use W and S to move up and down" << std::endl;
 

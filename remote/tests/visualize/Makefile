@@ -20,18 +20,18 @@ graphics/obj/:
 lib/:
 	mkdir -p lib
 
-visualize.x: test_visualize.cpp lib/graphics.a
-	$(CC) $(DEBUGFLAGS) test_visualize.cpp lib/graphics.a \
+visualize.x: test_visualize.cpp lib/libgraphics.a
+	$(CC) $(RELEASEFLAGS) test_visualize.cpp lib/libgraphics.a \
 		$(LDFLAGS_RELEASE) -o $@
 
-visualize_d.x: test_visualize.cpp lib/graphics_d.a
-	$(CC) $(RELEASEFLAGS) test_visualize.cpp lib/graphics_d.a \
+visualize_d.x: test_visualize.cpp lib/libgraphics_d.a
+	$(CC) $(DEBUGFLAGS) test_visualize.cpp lib/libgraphics_d.a \
 		$(LDFLAGS_DEBUG) -o $@
 
 
 # Graphics
 
-lib/graphics.a: graphics/obj/font_d.o graphics/obj/image_d.o
+lib/libgraphics.a: graphics/obj/font_d.o graphics/obj/image_d.o
 #		graphics/obj/loadimage_d.o
 	ar rcs $@ $^
 
@@ -45,7 +45,7 @@ graphics/obj/image.o: graphics/image.cpp graphics/image.h
 #	$(CC) -c $(RELEASEFLAGS) graphics/loadimage.cpp -o $@
 
 
-lib/graphics_d.a: graphics/obj/font_d.o graphics/obj/image_d.o
+lib/libgraphics_d.a: graphics/obj/font_d.o graphics/obj/image_d.o
 #		graphics/obj/loadimage_d.o
 	ar rcs $@ $^
 
@@ -58,6 +58,7 @@ graphics/obj/image_d.o: graphics/image.cpp graphics/image.h
 #graphics/obj/loadimage_d.o: graphics/loadimage.cpp graphics/loadimage.h
 #	$(CC) -c $(DEBUGFLAGS) graphics/loadimage.cpp -o $@
 
+
 clean:
-	rm -rf *.x graphics/obj
+	rm -rf *.x graphics/obj lib
 

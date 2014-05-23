@@ -58,9 +58,9 @@ int main(int argc, char **argv) {
 		RadioLinux radio(devicename, 57600, Radio::PARITY_EVEN);
 		RadioConnection connection(&radio);
 
-		std::cout << "Waiting for connection..." << std::endl;
-		connection.connect();
-		std::cout << "Connected!" << std::endl;
+//		std::cout << "Waiting for connection..." << std::endl;
+//		connection.connect();
+//		std::cout << "Connected!" << std::endl;
 
 		if (SDL_Init(SDL_INIT_VIDEO) != 0) {
 			std::cout << "Could not initialize SDL" << std::endl;
@@ -129,7 +129,9 @@ int main(int argc, char **argv) {
 
 		SDL_Event evt;
 		Packet *pkt = 0;
-		bool running = true;
+		long currentticks = SDL_GetTicks();
+		bool running = true,
+		     pause = false;
 		while (running) {
 
 			frame_start = SDL_GetTicks();
@@ -158,6 +160,9 @@ int main(int argc, char **argv) {
 								break;
 							case SDLK_UP:
 								value_scale *= 1.05;
+								break;
+							case SDLK_SPACE:
+								pause = !pause;
 								break;
 							default:
 								break;
@@ -276,8 +281,8 @@ int main(int argc, char **argv) {
 			}
 
 			// Data curves
-
-			Uint32 currentticks = SDL_GetTicks();
+			if (!pause)
+				currentticks = SDL_GetTicks();
 			int i, numpoints = 0;
 			std::list<DataPoint>::reverse_iterator iter;
 

@@ -27,8 +27,7 @@ void quit(int code) {
 	exit(code);
 }
 
-int main(int argc, char **argv) {
-
+void startUnbufferedInput() {
 	// Get current console termios attributes (so we can restore it later)
 	tcgetattr(STDIN_FILENO, &in_oldattr);
 	memcpy(&in_newattr, &in_oldattr, sizeof(struct termios));
@@ -39,6 +38,9 @@ int main(int argc, char **argv) {
 	in_newattr.c_cc[VTIME] = 0;
 
 	tcsetattr(STDIN_FILENO, TCSANOW, &in_newattr);
+}
+
+int main(int argc, char **argv) {
 
 	try {
 		RadioLinux radio("/dev/ttyUSB0", 57600, Radio::PARITY_EVEN);
@@ -50,10 +52,12 @@ int main(int argc, char **argv) {
 
 		std::cout << "Use W and S to move up and down" << std::endl;
 
+		startUnbufferedInput();
+
 		char c;
 		int bytes;
 
-		char value = 0;
+		char x = 0, y = 0, z = 0;
 		bool running = true;
 		while (running) {
 			while ((bytes = read(STDIN_FILENO, &c, 1)) > 0) {
@@ -65,17 +69,41 @@ int main(int argc, char **argv) {
 						running = false;
 					}	break;
 					case 'w': {
-						value += 4;
-						PacketMotion p(0, 0, value, 0);
+						z += 4;
+						PacketMotion p(x, y, z, 0);
 						connection.send(&p);
-						std::cout << "Sent z signal = " << (int)value
+						std::cout << "Sent signal (x = " << (int)x
+								<< ", y = " << (int)y
+								<< ", z = " << (int)z
 								<< std::endl;
 					}	break;
 					case 's': {
-						value -= 4;
-						PacketMotion p(0, 0, value, 0);
+						z -= 4;
+						PacketMotion p(x, y, z, 0);
 						connection.send(&p);
-						std::cout << "Sent z signal = " << (int)value
+						std::cout << "Sent signal (x = " << (int)x
+								<< ", y = " << (int)y
+								<< ", z = " << (int)z
+								<< std::endl;
+					}	break;
+					case 'a': {
+						x -= 4;
+						y -= 4;
+						PacketMotion p(x, y, z, 0);
+						connection.send(&p);
+						std::cout << "Sent signal (x = " << (int)x
+								<< ", y = " << (int)y
+								<< ", z = " << (int)z
+								<< std::endl;
+					}	break;
+					case 'd': {
+						x += 4;
+						y += 4;
+						PacketMotion p(x, y, z, 0);
+						connection.send(&p);
+						std::cout << "Sent signal (x = " << (int)x
+								<< ", y = " << (int)y
+								<< ", z = " << (int)z
 								<< std::endl;
 					}	break;
 					default:
