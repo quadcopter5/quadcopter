@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <unistd.h>
+#include <sys/time.h>
 
 #include "exception.h"
 #include "i2c.h"
@@ -98,13 +99,20 @@ void PWM::setFrequency(unsigned int hertz) {
 	mI2C->write(mSlaveAddr, buffer, bufsize);
 
 	usleep(1000);
+
+	resetFrame();
 }
 
 void PWM::setLoad(unsigned int channel, float factor) {
 	if (channel > 15)
 		THROW_EXCEPT(PWMException, "Invalid PWM channel given");
 
-	uint16_t offcount = (uint16_t)(factor * 4095.0f);
+	mLoad[channel] = factor;
+	mCount[channel] = (uint16_t)(mLoad[channel] * 4095.0f);
+	setExactLoad(channel, mCount[channel]);
+
+	/*
+	uint16_t offcount = (uint16_t)(mLoad * 4095.0f);
 
 	// Clip value to boundaries
 	if (offcount > 4095)
@@ -121,6 +129,7 @@ void PWM::setLoad(unsigned int channel, float factor) {
 	buffer[4] = (char)((offcount & 0x0F00) >> 8); // LEDx_OFF_H
 
 	mI2C->write(mSlaveAddr, buffer, 5);
+	*/
 }
 
 void PWM::setHighTime(unsigned int channel, float millis) {
@@ -128,16 +137,20 @@ void PWM::setHighTime(unsigned int channel, float millis) {
 		THROW_EXCEPT(PWMException, "Invalid PWM channel given");
 
 	float cycletime = 1000.0f / mFrequency; // Amt of time per cycle (ms)
-	uint16_t offcount;
+	mLoad[channel] = millis / cycletime;
+	mCount[channel] = (uint16_t)(mLoad[channel] * 4095.0f);
 
+	setExactLoad(channel, mCount[channel]);
+
+	/* This is handled by setExactLoad()
 	// Clip value to boundaries
 	if (millis > cycletime)
 		millis = cycletime;
 	else if (millis < 0.0f)
 		millis = 0.0f;
+	*/
 
-	offcount = (uint16_t)((millis / cycletime) * 4095.0f);
-
+	/*
 	char buffer[5];
 	buffer[0] = LED0_ON_L + channel * 4;
 	buffer[1] = 0x00; // LEDx_ON_L
@@ -146,6 +159,66 @@ void PWM::setHighTime(unsigned int channel, float millis) {
 	buffer[4] = (char)((offcount & 0x0F00) >> 8); // LEDx_OFF_H
 
 	mI2C->write(mSlaveAddr, buffer, 5);
+	*/
+}
+
+void PWM::setExactLoad(unsigned int channel, uint16_t count) {
+	if (channel > 15)
+		THROW_EXCEPT(PWMException, "Invalid PWM channel given");
+
+	mCount[channel] = count;
+
+	// Clip value to boundaries
+	if (count > 4095)
+		count = 4095;
+
+	char buffer[5];
+	buffer[0] = LED0_ON_L + channel * 4;
+	buffer[1] = 0x00; // LEDx_ON_L
+	buffer[2] = 0x00; // LEDx_ON_H
+	buffer[3] = (char)(count & 0x00FF); // LEDx_OFF_L
+	buffer[4] = (char)((count & 0x0F00) >> 8); // LEDx_OFF_H
+
+	mI2C->write(mSlaveAddr, buffer, 5);
+}
+
+void PWM::update(unsigned int channel) {
+	if (channel > 15)
+		THROW_EXCEPT(PWMException, "Invalid PWM channel given");
+
+	struct timeval current;
+	gettimeofday(&current, NULL);
+
+	float partial = mLoad[channel] * 4095.0f
+			- (uint16_t)(mLoad[channel] * 4095.0f);
+	long switch_time = partial * mFrameLength;
+
+	uint16_t lo_value = (uint16_t)(mLoad[channel] * 4095.0f);
+
+	long elapsed = (current.tv_sec - mFrameStart.tv_sec) * 1000000
+			- current.tv_usec - mFrameStart.tv_usec;
+	if (elapsed >= mFrameLength) {
+		// Start of a new frame
+		// Don't care too much about overflow in elapsed... it'll just skip a
+		// single frame, and it would only happen if update() is not called for
+		// a while
+		long elapsed_start = elapsed - elapsed % mFrameLength;
+		mFrameStart.tv_sec += elapsed_start / 1000000;
+		mFrameStart.tv_usec += elapsed_start % 1000000;
+		if (mFrameStart.tv_usec >= 1000000) {
+			mFrameStart.tv_sec += mFrameStart.tv_usec / 1000000;
+			mFrameStart.tv_usec = mFrameStart.tv_usec % 1000000;
+		}
+		elapsed -= elapsed_start;
+	}
+
+	if (elapsed < switch_time) {
+		if (mCount[channel] != lo_value)
+			setExactLoad(channel, lo_value);
+	} else {
+		if (mCount[channel] == lo_value)
+			setExactLoad(channel, lo_value + 1);
+	}
 }
 
 void PWM::setSleep(bool enabled) {
@@ -155,5 +228,15 @@ void PWM::setSleep(bool enabled) {
 	if (enabled)
 		buffer[1] |= MODE1_SLEEP;
 	mI2C->write(mSlaveAddr, buffer, 2);
+	resetFrame();
+}
+
+/*
+	Private member functions
+*/
+
+void PWM::resetFrame() {
+	gettimeofday(&mFrameStart, NULL);
+	mFrameLength = 8 * 1000000 / mFrequency; // 8 intermediate values
 }
 

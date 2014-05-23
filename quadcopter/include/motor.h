@@ -30,16 +30,16 @@ class Motor {
 				maxHighTime : maximum of the PWM signal range.
 
 			When setting the motor speed through setSpeed(), a value of 0.0f
-			will cause min_hightime ms to be used as the PWM signal, while a value
-			of 1.0f will cause max_hightime ms to be used.
+			will cause min_hightime ms to be used as the PWM signal, while a
+			value of 1.0f will cause max_hightime ms to be used.
 			
 			This means that min_hightime should refer to a stopping signal, and
 			max_hightime should be the highest allowed speed for the electrical
 			system.
 
 			The constructor will set the PWM output to a priming signal. You
-			should wait at least 3 seconds after the constructor is called before
-			counting on the motors to respond to setSpeed().
+			should wait at least 3 seconds after the constructor is called
+			before counting on the motors to respond to setSpeed().
 
 			Throws PWMException and I2CException.
 		*/
@@ -70,6 +70,20 @@ class Motor {
 			will be negative, indicating that the motor is in the priming state.
 		*/
 		float getSpeed();
+
+		/**
+			Update the signal sent to the motor. This is important for
+			maintaining a more precise speed. Because the PWM controller only
+			receives quantized values, this dithers the signal in order to
+			simulate intermediate values.
+
+			The effectiveness of the dither is dependent on the update rate
+			(how often this function is called).
+
+			PCA9685 PWM controller and Hobbywing Flyfun 18A motor controller
+			have noticeable steps when jumping between quantized values.
+		*/
+		void update();
 
 	private:
 		PWM   *mPWM;

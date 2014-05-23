@@ -41,3 +41,7 @@ float Motor::getSpeed() {
 	return mSpeed;
 }
 
+void Motor::update() {
+	mPWM->update(mChannel);
+}
+

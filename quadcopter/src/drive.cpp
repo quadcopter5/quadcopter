@@ -63,7 +63,7 @@ Drive::Drive(PWM *pwm, Accelerometer *accel, Gyroscope *gyro, int frontleft,
 
 	mMotors[0] = new Motor(pwm, frontleft, 1.26f, 1.6f);
 	mMotors[1] = new Motor(pwm, frontright, 1.26f, 1.6f);
-	mMotors[2] = new Motor(pwm, rearright, 1.27f, 1.6f);
+	mMotors[2] = new Motor(pwm, rearright, 1.26f, 1.6f);
 	mMotors[3] = new Motor(pwm, rearleft, 1.26f, 1.6f);
 
 	mAccelOffset.x = 0.0f;
@@ -141,6 +141,9 @@ void Drive::update() {
 
 	calculateOrientation(dtime);
 	stabilize();
+
+	for (int i = 0; i < 4; ++i)
+		mMotors[i]->update();
 
 	// Old basic stabilize algorithm
 	/*

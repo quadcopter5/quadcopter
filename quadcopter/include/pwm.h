@@ -20,6 +20,7 @@
 #endif
 
 #include <stdint.h>
+#include <sys/time.h>
 
 #include "exception.h"
 #include "i2c.h"
@@ -35,12 +36,12 @@ class PWM {
 		/**
 			Constructor
 
-			Creates an I2C PWM interface via the given (already instantiated) I2C
-			interface. Throughout the lifetime of the object, the given slave
-			address is used for communication.
+			Creates an I2C PWM interface via the given (already instantiated)
+			I2C interface. Throughout the lifetime of the object, the given
+			slave address is used for communication.
 
-			The class is NOT responsible for destroying i2c! This must be done by
-			the user of this class.
+			The class is NOT responsible for destroying i2c! This must be done
+			by the user of this class.
 
 			Also, the user must ensure that the I2C object remains valid for as
 			long as this I2C_PWM object is used.
@@ -74,8 +75,8 @@ class PWM {
 				factor = 0.5f  => Half load
 				factor = 1.0f  => Full load
 
-			factor values outside of this range will be implicitly clipped to the
-			outer values of the range.
+			factor values outside of this range will be implicitly clipped to
+			the outer values of the range.
 
 			Throws PWMException if channel is not a valid channel number.
 			       I2CException if I2C communication fails.
@@ -88,13 +89,27 @@ class PWM {
 			This function will attempt to set the amount of time in HIGH state
 			during each PWM cycle, independent of the PWM frequency selected.
 
-			The amount of time will be implicitly clipped to the maximum number of
-			milliseconds in each PWM cycle.
+			The amount of time will be implicitly clipped to the maximum number
+			of milliseconds in each PWM cycle.
 
 			Throws PWMException if channel is not a valid channel number.
 			       I2CException if I2C communication fails.
 		*/
 		void setHighTime(unsigned int channel, float millis);
+
+		/**
+			Set the PWM load using the same precision as the PCA9685. count
+			is an integer value in the inclusive range [0,4095]. Any values
+			higher than 4095 will be clipped to 4095.
+		*/
+		void setExactLoad(unsigned int channel, uint16_t count);
+
+		/**
+			Update dithering for the PWM signal on the given channel.
+
+			If dither is not desired, simply don't call this function.
+		*/
+		void update(unsigned int channel);
 
 		/**
 			Set the sleep mode for the PCA9685 (sleep mode consumes less power,
@@ -111,6 +126,18 @@ class PWM {
 		uint8_t mSlaveAddr;
 
 		unsigned int mFrequency; // in Hz
+		float    mLoad[16];
+//		uint16_t mLoCount[16]; // The low value for the dither
+		uint16_t mCount[16]; // The count out of 4095 to switch from ON to OFF
+
+		struct timeval mFrameStart; // start time of the current dither frame
+		long mFrameLength; // length of dithering frame, in microseconds
+
+		/**
+			Update mFrameLength according to mFrequency, and reset the phase of
+			the dithering frame (i.e. set mFrameStart to current time).
+		*/
+		void resetFrame();
 };
 
 #endif
