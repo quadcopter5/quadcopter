@@ -116,6 +116,19 @@ void Visualizer::render(int time) {
 			glVertex3d(mRightSide + 0.5, 100.5 + 200 * c, 0.0);
 		}
 
+		// Separators
+		glColor4d((mColors[0].x + mColors[1].x) / 2.0,
+				(mColors[0].y + mColors[1].y) / 2.0,
+				(mColors[0].z + mColors[1].z) / 2.0, 1.0);
+		glVertex3d(0.5, 200.5, 0.0);
+		glVertex3d(mRightSide + 0.5, 200.5, 0.0);
+
+		glColor4d((mColors[1].x + mColors[2].x) / 2.0,
+				(mColors[1].y + mColors[2].y) / 2.0,
+				(mColors[1].z + mColors[2].z) / 2.0, 1.0);
+		glVertex3d(0.5, 400.5, 0.0);
+		glVertex3d(mRightSide + 0.5, 400.5, 0.0);
+
 		// Scale
 		for (double place = mRightSide + 0.5; place > 0.0;
 				place -= 1000.0 / mTimeScale) {
