@@ -136,6 +136,13 @@ class Drive {
 		*/
 		float getYaw();
 
+		/**
+			Set the coefficients for the PID controller.
+
+			Also resets any state previously accumulated by the PID controller.
+		*/
+		void setPID(float p, float i, float d);
+
 		/*
 			Calibrate sensors. Reads sensors for the given number of
 			milliseconds at 100Hz. Then, averages the readings and uses these

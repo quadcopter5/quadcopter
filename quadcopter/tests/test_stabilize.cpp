@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
 		PWM pwm(&i2c, 0x40);
 		pwm.setFrequency(50);
 		Accelerometer accel(&i2c, 0x53, Accelerometer::RANGE_2G,
-				Accelerometer::SRATE_50HZ);
+				Accelerometer::SRATE_100HZ);
 		Gyroscope gyro(&i2c, 0x69, Gyroscope::RANGE_250DPS,
 				Gyroscope::SRATE_100HZ);
 
@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
 
 		std::cout << "Press ENTER to quit" << std::endl;
 
-		Drive drive(&pwm, &accel, &gyro, 0, 2, 5, 7, 10);
+		Drive drive(&pwm, &accel, &gyro, 0, 2, 5, 7, 40);
 
 		char   c;
 		bool   running = true;
@@ -91,11 +91,24 @@ int main(int argc, char **argv) {
 							std::cout << "Received QUIT signal" << std::endl;
 						}
 						else {
-							std::cout << "Received packet, z = "
+							std::cout << "Received packet, x = "
+									<< (int)p->getX() << ", y = "
+									<< (int)p->getY() << ", z = "
 									<< (int)p->getZ() << std::endl;
-							drive.move(Vector3<float>(0.0f, 0.0f,
+							drive.move(Vector3<float>(
+									(float)p->getX(), (float)p->getY(),
 									(float)p->getZ() / 128.0f));
 						}
+					}	break;
+
+					case PKT_DIAGNOSTIC:
+					{
+						PacketDiagnostic *p = (PacketDiagnostic*)pkt;
+						std::cout << "Received packet, P = "
+								<< p->getAccelX() << ", I = "
+								<< p->getAccelY() << ", D = "
+								<< p->getAccelZ() << std::endl;
+						drive.setPID(p->getAccelX(), p->getAccelY(), p->getAccelZ());
 					}	break;
 
 					default:
@@ -107,11 +120,11 @@ int main(int argc, char **argv) {
 
 			drive.update();
 
-			PacketMotion out((int8_t)drive.getRoll(), (int8_t)drive.getPitch(),
-					(int8_t)drive.getYaw(), 0);
+			PacketDiagnostic out(0, drive.getRoll(), drive.getPitch(),
+					drive.getYaw());
 			connection.send(&out);
 
-			usleep(20000); // 20,000 us = 0.02 ms = accelerometer update rate
+			usleep(10000); // 10,000 us = 0.01 ms = 100Hz = accel update rate
 			//usleep(100000);
 		}
 

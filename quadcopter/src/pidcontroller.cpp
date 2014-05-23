@@ -64,3 +64,29 @@ void PIDController::setTarget(float target) {
 	mTarget = target;
 }
 
+void PIDController::setP(float p) {
+	mProportional = p;
+}
+
+void PIDController::setI(float i) {
+	mIntegral = i;
+}
+
+void PIDController::setD(float d) {
+	mDerivative = d;
+}
+
+void PIDController::setPID(float p, float i, float d) {
+	mProportional = p;
+	mIntegral = i;
+	mDerivative = d;
+}
+
+void PIDController::reset() {
+	mAccumulator.clear();
+	mSumError = 0.0f;
+	mOutput = 0.0f;
+	mTimeCurrent = 0.0f;
+	gettimeofday(&mLastUpdate, NULL);
+}
+

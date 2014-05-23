@@ -34,7 +34,7 @@ class PIDController {
 		              float proportional,
 		              float integral,
 		              float derivative,
-					  size_t accum_size = 3);
+		              size_t accum_size = 3);
 
 		/**
 			Feed an input value to the controller.
@@ -54,6 +54,32 @@ class PIDController {
 			Set the target to a new value.
 		*/
 		void setTarget(float target);
+
+		/**
+			Set the coefficient for the proportional term.
+		*/
+		void setP(float p);
+
+		/**
+			Set the coefficient for the integral term.
+		*/
+		void setI(float i);
+
+		/**
+			Set the coefficient for the derivative term.
+		*/
+		void setD(float d);
+
+		/**
+			Set the coefficients for each term P, I, and D.
+		*/
+		void setPID(float p, float i, float d);
+
+		/**
+			Resets any state accumulated previously (sets the integral sum back
+			to 0, and resets the derivative buffer to 0)
+		*/
+		void reset();
 
 		float getSumError() {
 			return mSumError;

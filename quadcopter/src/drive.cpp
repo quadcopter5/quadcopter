@@ -57,13 +57,13 @@ Drive::Drive(PWM *pwm, Accelerometer *accel, Gyroscope *gyro, int frontleft,
 	mTargetPitch = 0.0f;
 	mTargetYaw   = 0.0f;
 
-	mPIDRoll  = new PIDController(mTargetRoll,  10.0f, 1.0f, 0.0f, 5);
-	mPIDPitch = new PIDController(mTargetPitch, 10.0f, 1.0f, 0.0f, 5);
-	mPIDYaw   = new PIDController(mTargetYaw,   5.0f, 0.0f, 0.0f, 5);
+	mPIDRoll  = new PIDController(mTargetRoll,  0.00f, 0.00f, 0.00f, 5);
+	mPIDPitch = new PIDController(mTargetPitch, 0.00f, 0.00f, 0.00f, 5);
+	mPIDYaw   = new PIDController(mTargetYaw,   0.00f, 0.00f, 0.00f, 5);
 
 	mMotors[0] = new Motor(pwm, frontleft, 1.26f, 1.6f);
 	mMotors[1] = new Motor(pwm, frontright, 1.26f, 1.6f);
-	mMotors[2] = new Motor(pwm, rearright, 1.26f, 1.6f);
+	mMotors[2] = new Motor(pwm, rearright, 1.27f, 1.6f);
 	mMotors[3] = new Motor(pwm, rearleft, 1.26f, 1.6f);
 
 	mAccelOffset.x = 0.0f;
@@ -203,6 +203,16 @@ float Drive::getYaw() {
 	return mYaw;
 }
 
+void Drive::setPID(float p, float i, float d) {
+	mPIDRoll->setPID(p, i, d);
+	mPIDPitch->setPID(p, i, d);
+	mPIDYaw->setPID(p, i, d);
+
+	mPIDRoll->reset();
+	mPIDPitch->reset();
+	mPIDYaw->reset();
+}
+
 void Drive::calibrate(unsigned int millis) {
 	Vector3<float> accel_total;
 	Vector3<float> gyro_total;
@@ -235,28 +245,41 @@ void Drive::calibrate(unsigned int millis) {
 */
 
 void Drive::updateSensors() {
-	++mAccelValueCurrent;
-	if (mAccelValueCurrent >= mSmoothing)
-		mAccelValueCurrent = 0;
 
 	try {
 		// Fix exception handling for production
 		mAccelValue[mAccelValueCurrent] = mAccelerometer->read();
-	} catch (Exception &e) {
-		std::cout << "Accelerometer read." << std::endl;
-		throw e;
-	}
 
-	++mGyroValueCurrent;
-	if (mGyroValueCurrent >= mSmoothing)
-		mGyroValueCurrent = 0;
+		++mAccelValueCurrent;
+		if (mAccelValueCurrent >= mSmoothing)
+			mAccelValueCurrent = 0;
+
+	} catch (Exception &e) {
+		std::cout << "Accelerometer read failure. ENTER to continue" << std::endl;
+		// MUST DELETE ME!
+		// Probably just resort back to previous accelerometer reading, or don't
+		// update the array at all. (gyro and accel have separate counters, could
+		// take advantage)
+		stop();
+		char c;
+		while (read(STDIN_FILENO, &c, 1) == 0)
+			usleep(10000);
+	}
 
 	try {
 		// Fix exception handling for production
 		mGyroValue[mGyroValueCurrent] = mGyroscope->read();
+
+		++mGyroValueCurrent;
+		if (mGyroValueCurrent >= mSmoothing)
+			mGyroValueCurrent = 0;
+
 	} catch (Exception &e) {
 		std::cout << "Gyroscope read." << std::endl;
-		throw e;
+		stop();
+		char c;
+		while (read(STDIN_FILENO, &c, 1) == 0)
+			usleep(10000);
 	}
 }
 
@@ -319,8 +342,8 @@ void Drive::stabilize() {
 	motorspeeds[0] = mTranslate.z;
 	motorspeeds[2] = mTranslate.z;
 
-	double d_ends  = mPIDPitch->output() / 5000.0f;
-	double d_sides = mPIDRoll->output() / 5000.0f;
+	double d_ends  = mPIDPitch->output() / 1000.0f;
+	double d_sides = mPIDRoll->output() / 1000.0f;
 
 	motorspeeds[0] += d_ends - d_sides;
 	//motorspeeds[1] += d_ends + d_sides;
@@ -338,7 +361,7 @@ void Drive::stabilize() {
 			mMotors[i]->setSpeed(motorspeeds[i]);
 		}
 	} catch (Exception &e) {
-		std::cout << "Stupid shit. " << motorspeeds[0] << ", "
+		std::cout << "Motor set failure. " << motorspeeds[0] << ", "
 				<< motorspeeds[1] << ", " << motorspeeds[2] << ", "
 				<< motorspeeds[4] << std::endl;
 		throw e;
