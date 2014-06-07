@@ -41,10 +41,15 @@ int main(int argc, char **argv) {
 		Visualizer visualizer("Stabilization Test");
 
 		char x = 0, y = 0, z = 0;
-		float pid_p = 0.0, pid_i = 0.0, pid_d = 0.0;
+		float pidangle_p = 0.0, pidangle_i = 0.0, pidangle_d = 0.0,
+		      pidrate_p = 0.0, pidrate_i = 0.0, pidrate_d = 0.0;
 		Packet *pkt;
 		bool changed_setpoint,
-		     changed_pid;
+		     changed_pidangle,
+		     changed_pidrate;
+
+		enum WhichPID { PID_ANGLE, PID_RATE };
+		int  modifying = PID_ANGLE;
 
 		SDL_Event evt;
 		Uint32 frame_start;
@@ -55,7 +60,8 @@ int main(int argc, char **argv) {
 			frame_start = SDL_GetTicks();
 
 			changed_setpoint = false;
-			changed_pid = false;
+			changed_pidangle = false;
+			changed_pidrate = false;
 			while (SDL_PollEvent(&evt)) {
 				switch (evt.type) {
 					case SDL_QUIT: {
@@ -114,41 +120,87 @@ int main(int argc, char **argv) {
 
 							// PID adjustment
 
+							case SDLK_h:
+								if (modifying == PID_ANGLE) {
+									modifying = PID_RATE;
+									std::cout << "PID adjustments will now "
+											<< "affect Rate PID" << std::endl;
+								} else {
+									modifying = PID_ANGLE;
+									std::cout << "PID adjustments will now "
+											<< "affect Angle PID" << std::endl;
+								}
+								break;
+
 							case SDLK_u:
-								pid_p += 0.01f;
-								changed_pid = true;
+								if (modifying == PID_ANGLE) {
+									pidangle_p += 0.01f;
+									changed_pidangle = true;
+								} else if (modifying == PID_RATE) {
+									pidrate_p += 0.01f;
+									changed_pidrate = true;
+								}
 								break;
 
 							case SDLK_j:
-								pid_p -= 0.01f;
-								changed_pid = true;
+								if (modifying == PID_ANGLE) {
+									pidangle_p -= 0.01f;
+									changed_pidangle = true;
+								} else if (modifying == PID_RATE) {
+									pidrate_p -= 0.01f;
+									changed_pidrate = true;
+								}
 								break;
 
 							case SDLK_i:
-								pid_i += 0.01f;
-								changed_pid = true;
+								if (modifying == PID_ANGLE) {
+									pidangle_i += 0.01f;
+									changed_pidangle = true;
+								} else if (modifying == PID_RATE) {
+									pidrate_i += 0.01f;
+									changed_pidrate = true;
+								}
 								break;
 
 							case SDLK_k:
-								pid_i -= 0.01f;
-								changed_pid = true;
+								if (modifying == PID_ANGLE) {
+									pidangle_i -= 0.01f;
+									changed_pidangle = true;
+								} else if (modifying == PID_RATE) {
+									pidrate_i -= 0.01f;
+									changed_pidrate = true;
+								}
 								break;
 
 							case SDLK_o:
-								pid_d += 0.01f;
-								changed_pid = true;
+								if (modifying == PID_ANGLE) {
+									pidangle_d += 0.01f;
+									changed_pidangle = true;
+								} else if (modifying == PID_RATE) {
+									pidrate_d += 0.01f;
+									changed_pidrate = true;
+								}
 								break;
 
 							case SDLK_l:
-								pid_d -= 0.01f;
-								changed_pid = true;
+								if (modifying == PID_ANGLE) {
+									pidangle_d -= 0.01f;
+									changed_pidangle = true;
+								} else if (modifying == PID_RATE) {
+									pidrate_d -= 0.01f;
+									changed_pidrate = true;
+								}
 								break;
 
 							case SDLK_p:
-								pid_p = 0.0f;
-								pid_i = 0.0f;
-								pid_d = 0.0f;
-								changed_pid = true;
+								pidangle_p = 0.0f;
+								pidangle_i = 0.0f;
+								pidangle_d = 0.0f;
+								pidrate_p = 0.0f;
+								pidrate_i = 0.0f;
+								pidrate_d = 0.0f;
+								changed_pidangle = true;
+								changed_pidrate = true;
 								break;
 
 							// Graph scale adjustment
@@ -185,12 +237,21 @@ int main(int argc, char **argv) {
 						<< ")" << std::endl;
 			}
 
-			if (changed_pid) {
-				PacketDiagnostic p(0, pid_p, pid_i, pid_d);
+			if (changed_pidangle) {
+				PacketDiagnostic p(0, pidangle_p, pidangle_i, pidangle_d);
 				connection.send(&p);
-				std::cout << "Sent signal (P = " << pid_p
-						<< ", I = " << pid_i
-						<< ", D = " << pid_d
+				std::cout << "Sent signal (Affect Angle, P = " << pidangle_p
+						<< ", I = " << pidangle_i
+						<< ", D = " << pidangle_d
+						<< ")" << std::endl;
+			}
+
+			if (changed_pidrate) {
+				PacketDiagnostic p(1, pidrate_p, pidrate_i, pidrate_d);
+				connection.send(&p);
+				std::cout << "Sent signal (Affect Rate, P = " << pidrate_p
+						<< ", I = " << pidrate_i
+						<< ", D = " << pidrate_d
 						<< ")" << std::endl;
 			}
 
