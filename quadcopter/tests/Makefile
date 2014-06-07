@@ -5,7 +5,7 @@
 CC = g++
 CFLAGS = -I../include -I../../common/include
 DEBUGFLAGS = -g -D_DEBUG
-LDFLAGS = -L../lib -lquadcopter_d -lcommon_d
+LDFLAGS = -L../lib -lquadcopter_d -lcommon_d -lrt -lpthread
 
 BINDIR = bin
 

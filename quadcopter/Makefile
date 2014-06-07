@@ -13,7 +13,7 @@ LIBDIR = lib
 
 CC = g++
 CFLAGS = -Iinclude -I$(COMMON)/include
-LDFLAGS = -Llib
+LDFLAGS = -Llib -lrt -lpthread
 
 RELEASEFLAGS = -O3
 DEBUGFLAGS = -g -D_DEBUG

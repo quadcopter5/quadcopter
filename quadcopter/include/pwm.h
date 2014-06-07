@@ -101,6 +101,9 @@ class PWM {
 			Set the PWM load using the same precision as the PCA9685. count
 			is an integer value in the inclusive range [0,4095]. Any values
 			higher than 4095 will be clipped to 4095.
+
+			Throws PWMException if channel is not a valid channel number.
+			       I2CException if I2C communication fails.
 		*/
 		void setExactLoad(unsigned int channel, uint16_t count);
 
@@ -108,6 +111,9 @@ class PWM {
 			Update dithering for the PWM signal on the given channel.
 
 			If dither is not desired, simply don't call this function.
+
+			Throws PWMException if channel is not a valid channel number.
+			       I2CException if I2C communication fails.
 		*/
 		void update(unsigned int channel);
 
@@ -118,6 +124,8 @@ class PWM {
 			enabled
 			   true  : sleep mode enabled
 			   false : sleep mode disabled (running normally)
+
+			Throws I2CException if I2C communication fails.
 		*/
 		void setSleep(bool enabled);
 

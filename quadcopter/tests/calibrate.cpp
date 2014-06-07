@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
 		Gyroscope gyro(&i2c, 0x69, Gyroscope::RANGE_250DPS,
 				Gyroscope::SRATE_100HZ);
 
-		Drive drive(&pwm, &accel, &gyro, 15, 15, 15, 15);
+		Drive drive(&pwm, &accel, &gyro, 15, 15, 15, 15, 100);
 		
 		std::cout << "Calibrating for 2 seconds. Keep sensors still!"
 				<< std::endl

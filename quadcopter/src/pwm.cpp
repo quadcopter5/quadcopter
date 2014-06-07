@@ -116,26 +116,6 @@ void PWM::setLoad(unsigned int channel, float factor) {
 	mLoad[channel] = factor;
 	mCount[channel] = (uint16_t)(mLoad[channel] * 4095.0f);
 	setExactLoad(channel, mCount[channel]);
-
-	/*
-	uint16_t offcount = (uint16_t)(mLoad * 4095.0f);
-
-	// Clip value to boundaries
-	if (offcount > 4095)
-		offcount = 4095;
-	else if (offcount < 0)
-		offcount = 0;
-
-	// Send I2C command
-	char buffer[5];
-	buffer[0] = LED0_ON_L + channel * 4;
-	buffer[1] = 0x00; // LEDx_ON_L
-	buffer[2] = 0x00; // LEDx_ON_H
-	buffer[3] = (char)(offcount & 0x00FF); // LEDx_OFF_L
-	buffer[4] = (char)((offcount & 0x0F00) >> 8); // LEDx_OFF_H
-
-	mI2C->write(mSlaveAddr, buffer, 5);
-	*/
 }
 
 void PWM::setHighTime(unsigned int channel, float millis) {
@@ -147,25 +127,6 @@ void PWM::setHighTime(unsigned int channel, float millis) {
 	mCount[channel] = (uint16_t)(mLoad[channel] * 4095.0f);
 
 	setExactLoad(channel, mCount[channel]);
-
-	/* This is handled by setExactLoad()
-	// Clip value to boundaries
-	if (millis > cycletime)
-		millis = cycletime;
-	else if (millis < 0.0f)
-		millis = 0.0f;
-	*/
-
-	/*
-	char buffer[5];
-	buffer[0] = LED0_ON_L + channel * 4;
-	buffer[1] = 0x00; // LEDx_ON_L
-	buffer[2] = 0x00; // LEDx_ON_H
-	buffer[3] = (char)(offcount & 0x00FF); // LEDx_OFF_L
-	buffer[4] = (char)((offcount & 0x0F00) >> 8); // LEDx_OFF_H
-
-	mI2C->write(mSlaveAddr, buffer, 5);
-	*/
 }
 
 void PWM::setExactLoad(unsigned int channel, uint16_t count) {

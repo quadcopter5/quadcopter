@@ -49,6 +49,10 @@ void startUnbufferedInput() {
 
 int main(int argc, char **argv) {
 
+	// Get current console termios attributes now so that it isn't uninitialized
+	// in case of exception
+	tcgetattr(STDIN_FILENO, &in_oldattr);
+
 	try {
 
 		RadioUART radio(57600, Radio::PARITY_EVEN);
@@ -72,7 +76,8 @@ int main(int argc, char **argv) {
 
 		std::cout << "Press ENTER to quit" << std::endl;
 
-		Drive drive(&pwm, &accel, &gyro, 0, 2, 5, 7, 40);
+		Drive drive(&pwm, &accel, &gyro, 0, 2, 5, 7, 100, 40);
+		drive.startTimer();
 
 		char   c;
 		bool   running = true;
@@ -92,7 +97,7 @@ int main(int argc, char **argv) {
 							std::cout << "Received QUIT signal" << std::endl;
 						}
 						else {
-							std::cout << "Received packet, x = "
+							std::cout << "Received packet: x = "
 									<< (int)p->getX() << ", y = "
 									<< (int)p->getY() << ", z = "
 									<< (int)p->getZ() << std::endl;
@@ -105,11 +110,17 @@ int main(int argc, char **argv) {
 					case PKT_DIAGNOSTIC:
 					{
 						PacketDiagnostic *p = (PacketDiagnostic*)pkt;
-						std::cout << "Received packet, P = "
-								<< p->getAccelX() << ", I = "
-								<< p->getAccelY() << ", D = "
-								<< p->getAccelZ() << std::endl;
-						drive.setPID(p->getAccelX(), p->getAccelY(), p->getAccelZ());
+						std::cout << "Received packet: Affect "
+								<< (p->getBattery() == 0 ? "Angle" : "Rate")
+								<< ", P = " << p->getAccelX()
+								<< ", I = " << p->getAccelY()
+								<< ", D = " << p->getAccelZ() << std::endl;
+
+						if (p->getBattery() == 0)
+							drive.setPIDAngle(p->getAccelX(), p->getAccelY(), p->getAccelZ());
+						else if (p->getBattery() == 1)
+							drive.setPIDRate(p->getAccelX(), p->getAccelY(), p->getAccelZ());
+
 					}	break;
 
 					default:
@@ -119,8 +130,6 @@ int main(int argc, char **argv) {
 				pkt = 0;
 			}
 
-			drive.update();
-
 			++count_comm;
 			if (count_comm >= 5) {
 				count_comm = 0;
@@ -129,8 +138,7 @@ int main(int argc, char **argv) {
 				connection.send(&out);
 			}
 
-			usleep(10000); // 10,000 us = 0.01 ms = 100Hz = accel update rate
-			//usleep(100000);
+			usleep(10000); // 10,000 us = 0.01 s = 100Hz
 		}
 
 		std::cout << "Stopping motors" << std::endl;

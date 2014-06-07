@@ -82,6 +82,9 @@ class Motor {
 
 			PCA9685 PWM controller and Hobbywing Flyfun 18A motor controller
 			have noticeable steps when jumping between quantized values.
+
+			Throws PWMException if this Motor's channel is invalid
+			       I2CException if I2C communication fails.
 		*/
 		void update();
 

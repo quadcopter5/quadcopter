@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
 		PWM pwm(&i2c, 0x40);
 		pwm.setFrequency(50);
 		Accelerometer accel(&i2c, 0x53, Accelerometer::RANGE_2G,
-				Accelerometer::SRATE_50HZ);
+				Accelerometer::SRATE_100HZ);
 		Gyroscope gyro(&i2c, 0x69, Gyroscope::RANGE_250DPS,
 				Gyroscope::SRATE_100HZ);
 
@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
 		connection.connect();
 		std::cout << "Connected!" << std::endl;
 
-		Drive drive(&pwm, &accel, &gyro, 0, 2, 5, 7);
+		Drive drive(&pwm, &accel, &gyro, 0, 2, 5, 7, 100);
 
 		char   c;
 		bool   running = true;
@@ -79,7 +79,7 @@ int main(int argc, char **argv) {
 				pkt = 0;
 			}
 
-			drive.update();
+			// drive.update(); // Not in new synchronous-timed update API
 			usleep(50000);
 		}
 
